@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/github/AmpleHealth/mlruns/0/668f362b3d85492b8af3fd6807e5caf3/artifacts
+end_time: 1734812233341
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 668f362b3d85492b8af3fd6807e5caf3
+run_name: Experiment_mfcc
+run_uuid: 668f362b3d85492b8af3fd6807e5caf3
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734812232839
+status: 4
+tags: []
+user_id: rezaa

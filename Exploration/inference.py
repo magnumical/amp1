@@ -169,8 +169,8 @@ class RespiratorySoundAnalysis:
 
 # Entry point for standalone execution
 if __name__ == "__main__":
-    diagnosis_file = 'D://github//AmpleHealth//data//Respiratory_Sound_Database//Respiratory_Sound_Database/patient_diagnosis.csv'
-    audio_path = 'D://github//AmpleHealth/data/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files/'
+    diagnosis_file = 'D://github//AmpleHealth//data//Respiratory_Sound_Database//patient_diagnosis.csv'
+    audio_path = 'D://github//AmpleHealth/data/Respiratory_Sound_Database/audio_and_txt_files/'
 
     analysis = RespiratorySoundAnalysis(diagnosis_file, audio_path)
 

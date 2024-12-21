@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/github/AmpleHealth/mlruns/0/0d2af6c4e2374e3ca4d9b459c3514028/artifacts
+end_time: 1734812233308
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 0d2af6c4e2374e3ca4d9b459c3514028
+run_name: puzzled-crab-693
+run_uuid: 0d2af6c4e2374e3ca4d9b459c3514028
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734812232889
+status: 4
+tags: []
+user_id: rezaa
