@@ -82,7 +82,7 @@ def mfccs_feature_extraction(audio_files_path, df_filtered, n_jobs=-1):
     """
     processing_logger.info(f"Processing audio files in: {audio_files_path}")
     files = [file for file in os.listdir(audio_files_path) if file.endswith('.wav') and file[:3] not in ['103', '108', '115']]
-    files = files[:40]  # DEBUG limit, adjust as needed
+    #files = files[:40]  # DEBUG limit, adjust as needed
 
     # Use Parallel and delayed to process files in parallel
     results = Parallel(n_jobs=n_jobs, backend="loky")(

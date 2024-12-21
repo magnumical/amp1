@@ -72,23 +72,62 @@ def build_cnn_model(input_shape, n_filters=32, dense_units=128, dropout_rate=0.3
 
 
 def build_gru_model(input_shape, num_units=128, dropout_rate=0.3, num_classes=2):
-    model_logger.info("Building GRU model.")
-    Input_Sample = Input(shape=input_shape)
+    """
+    Build a GRU model with the specified architecture.
 
-    # GRU architecture
-    model_gru = GRU(num_units, return_sequences=True, activation='tanh')(Input_Sample)
-    model_gru = GRU(num_units, return_sequences=False, activation='tanh')(model_gru)
-    model_gru = Dropout(dropout_rate)(model_gru)
+    Args:
+        input_shape: Shape of the input data (e.g., (1, 52)).
+        num_classes: Number of output classes.
 
-    # Fully connected layers
-    dense_layer = Dense(num_units, activation='relu')(model_gru)
-    dense_layer = Dropout(dropout_rate)(dense_layer)
-    output_layer = Dense(num_classes, activation='softmax')(dense_layer)
+    Returns:
+        Compiled GRU model.
+    """
+    # Input layer
+    input_layer = Input(shape=input_shape)
 
-    model = Model(inputs=Input_Sample, outputs=output_layer)
-    model.compile(optimizer=Adamax(), loss='categorical_crossentropy', metrics=['accuracy'])
-    model_logger.info("GRU model built and compiled successfully.")
-    return model
+    # First Convolutional Block
+    conv_block1 = Conv1D(256, kernel_size=5, strides=1, padding='same', activation='relu')(input_layer)
+    conv_block1 = MaxPooling1D(pool_size=2, strides=2, padding='same')(conv_block1)
+    conv_block1 = BatchNormalization()(conv_block1)
+
+    # Second Convolutional Block
+    conv_block2 = Conv1D(512, kernel_size=5, strides=1, padding='same', activation='relu')(conv_block1)
+    conv_block2 = MaxPooling1D(pool_size=2, strides=2, padding='same')(conv_block2)
+    conv_block2 = BatchNormalization()(conv_block2)
+
+    # GRU Branch 1
+    gru_branch1 = GRU(32, return_sequences=True, activation='tanh', go_backwards=True)(conv_block2)
+    gru_branch1 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(gru_branch1)
+
+    # GRU Branch 2
+    gru_branch2 = GRU(64, return_sequences=True, activation='tanh', go_backwards=True)(conv_block2)
+    gru_branch2 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(gru_branch2)
+
+    # GRU Branch 3
+    gru_branch3 = GRU(64, return_sequences=True, activation='tanh', go_backwards=True)(conv_block2)
+    gru_branch3 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(gru_branch3)
+
+    # Combine GRU Branches
+    combined_gru_branches = add([gru_branch1, gru_branch2, gru_branch3])
+
+    # Additional GRU Layers
+    additional_gru1 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(combined_gru_branches)
+    additional_gru1 = GRU(32, return_sequences=False, activation='tanh', go_backwards=True)(additional_gru1)
+
+    # Fully Connected Layers
+    dense_block = Dense(64, activation=None)(additional_gru1)
+    dense_block = LeakyReLU()(dense_block)
+    dense_block = Dense(32, activation=None)(dense_block)
+    dense_block = LeakyReLU()(dense_block)
+
+    # Output Layer
+    output_layer = Dense(num_classes, activation="softmax")(dense_block)
+
+    # Build and Compile Model
+    gru_model = Model(inputs=input_layer, outputs=output_layer)
+    gru_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    return gru_model
 
 
 

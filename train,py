@@ -516,7 +516,6 @@ def optimize_gru_model(trial):
     val_accuracy = max(history.history["val_accuracy"])
     return val_accuracy
 
-
 def build_gru_model(input_shape, num_classes):
     """
     Build a GRU model with the specified architecture.
@@ -528,50 +527,53 @@ def build_gru_model(input_shape, num_classes):
     Returns:
         Compiled GRU model.
     """
-    Input_Sample = Input(shape=input_shape)
+    # Input layer
+    input_layer = Input(shape=input_shape)
 
-    # First Conv1D block
-    model_conv = Conv1D(256, kernel_size=5, strides=1, padding='same', activation='relu')(Input_Sample)
-    model_conv = MaxPooling1D(pool_size=2, strides=2, padding='same')(model_conv)
-    model_conv = BatchNormalization()(model_conv)
+    # First Convolutional Block
+    conv_block1 = Conv1D(256, kernel_size=5, strides=1, padding='same', activation='relu')(input_layer)
+    conv_block1 = MaxPooling1D(pool_size=2, strides=2, padding='same')(conv_block1)
+    conv_block1 = BatchNormalization()(conv_block1)
 
-    model_conv = Conv1D(512, kernel_size=5, strides=1, padding='same', activation='relu')(model_conv)
-    model_conv = MaxPooling1D(pool_size=2, strides=2, padding='same')(model_conv)
-    model_conv = BatchNormalization()(model_conv)
+    # Second Convolutional Block
+    conv_block2 = Conv1D(512, kernel_size=5, strides=1, padding='same', activation='relu')(conv_block1)
+    conv_block2 = MaxPooling1D(pool_size=2, strides=2, padding='same')(conv_block2)
+    conv_block2 = BatchNormalization()(conv_block2)
 
-    # GRU branches
-    model_2_1 = GRU(32, return_sequences=True, activation='tanh', go_backwards=True)(model_conv)
-    model_2 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(model_2_1)
+    # GRU Branch 1
+    gru_branch1 = GRU(32, return_sequences=True, activation='tanh', go_backwards=True)(conv_block2)
+    gru_branch1 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(gru_branch1)
 
-    model_3 = GRU(64, return_sequences=True, activation='tanh', go_backwards=True)(model_conv)
-    model_3 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(model_3)
+    # GRU Branch 2
+    gru_branch2 = GRU(64, return_sequences=True, activation='tanh', go_backwards=True)(conv_block2)
+    gru_branch2 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(gru_branch2)
 
-    model_x = GRU(64, return_sequences=True, activation='tanh', go_backwards=True)(model_conv)
-    model_x = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(model_x)
+    # GRU Branch 3
+    gru_branch3 = GRU(64, return_sequences=True, activation='tanh', go_backwards=True)(conv_block2)
+    gru_branch3 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(gru_branch3)
 
-    # Add GRU branches
-    model_add_1 = add([model_3, model_2, model_x])
+    # Combine GRU Branches
+    combined_gru_branches = add([gru_branch1, gru_branch2, gru_branch3])
 
-    model_5 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(model_add_1)
-    model_5 = GRU(32, return_sequences=False, activation='tanh', go_backwards=True)(model_5)  # Final GRU layer
+    # Additional GRU Layers
+    additional_gru1 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(combined_gru_branches)
+    additional_gru1 = GRU(32, return_sequences=False, activation='tanh', go_backwards=True)(additional_gru1)
 
-    # Fully connected layers
-    model_dense = Dense(64, activation=None)(model_5)
-    model_dense = LeakyReLU()(model_dense)
+    # Fully Connected Layers
+    dense_block = Dense(64, activation=None)(additional_gru1)
+    dense_block = LeakyReLU()(dense_block)
+    dense_block = Dense(32, activation=None)(dense_block)
+    dense_block = LeakyReLU()(dense_block)
 
-    model_dense = Dense(32, activation=None)(model_dense)
-    model_dense = LeakyReLU()(model_dense)
+    # Output Layer
+    output_layer = Dense(num_classes, activation="softmax")(dense_block)
 
-    # Output layer
-    output_layer = Dense(num_classes, activation="softmax")(model_dense)
-
-    gru_model = Model(inputs=Input_Sample, outputs=output_layer)
-
-    # Compile the model
+    # Build and Compile Model
+    gru_model = Model(inputs=input_layer, outputs=output_layer)
     gru_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
- 
     return gru_model
+
 def main():
     data_logger.info("Starting data pipeline.")
     df = load_data()
@@ -651,103 +653,6 @@ def main():
                 model = track_experiment_with_mlflow_and_optuna(mode)
                 models.append(model)
 
-    evaluate_and_compare(models, modes, X_test, y_test, le)
-
-
-import seaborn as sns
-from sklearn.metrics import confusion_matrix
-def plot_roc_curve(y_true, y_pred_prob, mode):
-    """
-    Plots the ROC curve for the model predictions.
-    
-    Args:
-        y_true: Ground truth labels.
-        y_pred_prob: Predicted probabilities for the positive class.
-        mode: The current mode (used for labeling and file naming).
-    """
-    plt.figure(figsize=(10, 7))
-    
-    if len(y_pred_prob.shape) == 2 and y_pred_prob.shape[1] > 1:
-        # Multi-class ROC (for GRU mode)
-        for i in range(y_pred_prob.shape[1]):
-            fpr, tpr, _ = roc_curve(y_true == i, y_pred_prob[:, i])
-            auc_score = roc_auc_score(y_true == i, y_pred_prob[:, i])
-            plt.plot(fpr, tpr, label=f"Class {i} (AUC = {auc_score:.2f})")
-    else:
-        # Binary ROC
-        fpr, tpr, _ = roc_curve(y_true, y_pred_prob[:, 1])
-        auc_score = roc_auc_score(y_true, y_pred_prob[:, 1])
-        plt.plot(fpr, tpr, color='darkorange', lw=2, label=f"ROC curve (area = {auc_score:.2f})")
-    
-    plt.plot([0, 1], [0, 1], color="navy", lw=2, linestyle="--")
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title(f"ROC Curve ({mode})")
-    plt.legend(loc="lower right")
-    plt.tight_layout()
-    roc_path = f"roc_curve_{mode}.png"
-    plt.savefig(roc_path)
-    mlflow.log_artifact(roc_path)
-    plt.show()
-
-def plot_confusion_matrix(y_true, y_pred, class_names, mode):
-    """
-    Plots a confusion matrix using seaborn heatmap.
-    
-    Args:
-        y_true: Ground truth labels.
-        y_pred: Predicted labels.
-        class_names: List of class names.
-        mode: The current mode (used for labeling).
-    """
-    cm = confusion_matrix(y_true, y_pred)
-    plt.figure(figsize=(10, 7))
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
-    plt.title(f"Confusion Matrix ({mode})")
-    plt.xlabel("Predicted")
-    plt.ylabel("Actual")
-    plt.tight_layout()
-    cm_path = f"confusion_matrix_{mode}.png"
-    plt.savefig(cm_path)
-    mlflow.log_artifact(cm_path)
-    plt.show()
-
-def evaluate_and_compare(models, modes, X_test, y_test, le):
-    """Evaluate and compare models across modes."""
-    comparison_results = {}
-
-    for mode, model in zip(modes, models):
-        model_logger.info(f"Evaluating model for {mode}.")
-        y_pred_prob = model.predict(X_test)
-        y_pred = np.argmax(y_pred_prob, axis=1)
-        y_true = np.argmax(y_test, axis=1)
-
-        # Metrics
-        auc_score = roc_auc_score(y_true, y_pred_prob[:, 1])
-        classification = classification_report(y_true, y_pred, target_names=le.classes_)
-
-        # Save results
-        comparison_results[mode] = {
-            'auc': auc_score,
-            'classification_report': classification
-        }
-
-        # Visualization
-        plot_confusion_matrix(y_true, y_pred, le.classes_, mode)
-        plot_roc_curve(y_true, y_pred_prob, mode)
-
-        print(f"Classification Report for {mode}:\n{classification}")
-
-        log_metrics(y_true, y_pred, mode)
-
-    # Compare best models across modes
-    best_mode = max(comparison_results, key=lambda x: comparison_results[x]['auc'])
-    print(f"Best Mode: {best_mode} with AUC: {comparison_results[best_mode]['auc']:.2f}")
-    # Log the best mode and its results to MLflow
-    mlflow.log_param("best_mode", best_mode)
-    mlflow.log_metric(f"{best_mode}_auc", comparison_results[best_mode]['auc'])
-
-    return comparison_results
 
 if __name__ == "__main__":
     main()

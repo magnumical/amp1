@@ -55,6 +55,7 @@ def main():
     # Modes to process
     modes = ['gru', 'mfcc', 'log_mel']
 
+
     for mode in modes:
         processing_logger.info(f"Preparing dataset for mode: {mode}")
 
@@ -63,13 +64,17 @@ def main():
         else:
             X, y, le = prepare_dataset_parallel(df_filtered, AUDIO_FILES_PATH, mode=mode)
 
+        # Log input dimensions
+        processing_logger.info(f"Input data dimensions for mode {mode}: {X.shape}")
+        processing_logger.info(f"Output data dimensions for mode {mode}: {y.shape}")
+
         # Split dataset
         processing_logger.info("Splitting dataset...")
         X_train, X_val, X_test, y_train, y_val, y_test = split_dataset(X, y)
 
         # Check for class balance
         unique_classes, class_counts = np.unique(np.argmax(y_train, axis=1), return_counts=True)
-        processing_logger.info(f"Classes in y_train: {unique_classes}, Counts: {class_counts}")
+        processing_logger.info(f"Classes in y_train for {mode}: {unique_classes}, Counts: {class_counts}")
         if len(unique_classes) <= 1:
             raise ValueError(f"Insufficient class diversity in y_train for {mode} mode.")
 
@@ -80,12 +85,19 @@ def main():
             except ValueError as e:
                 processing_logger.warning(f"SMOTE skipped: {e}")
 
+        # Log dimensions after preprocessing
+        processing_logger.info(f"Training data dimensions for {mode}: X_train={X_train.shape}, y_train={y_train.shape}")
+        processing_logger.info(f"Validation data dimensions for {mode}: X_val={X_val.shape}, y_val={y_val.shape}")
+        processing_logger.info(f"Test data dimensions for {mode}: X_test={X_test.shape}, y_test={y_test.shape}")
+
         # Optimize and train model
         model_logger.info(f"Running optimization for {mode} mode...")
         if mode == 'gru':
             X_train = np.expand_dims(X_train, axis=1)
             X_val = np.expand_dims(X_val, axis=1)
             X_test = np.expand_dims(X_test, axis=1)
+
+            model_logger.info(f"Updated GRU Input dimensions: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
 
             study = optuna.create_study(direction="maximize")
             study.optimize(lambda trial: optimize_gru_model(
@@ -120,6 +132,9 @@ def main():
                 num_classes=y_train.shape[1]
             )
 
+        model_logger.info(f"Model input shape: {X_train.shape[1:]}")
+        model_logger.info(f"Number of output classes: {y_train.shape[1]}")
+
         # Train and save the model
         best_model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=32)
         model_path = f"./best_model_{mode}.h5"
@@ -129,6 +144,7 @@ def main():
         # Evaluate model
         y_pred = best_model.predict(X_test)
         log_metrics(y_test, y_pred, mode)
+
 
     data_logger.info("Pipeline completed successfully.")
 
