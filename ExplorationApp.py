@@ -11,7 +11,7 @@ import os
 # Define base paths
 BASE_PATH = 'D://github//AmpleHealth//data//Respiratory_Sound_Database//Respiratory_Sound_Database'
 DIAGNOSIS_FILE = os.path.join(BASE_PATH, 'patient_diagnosis.csv')
-AUDIO_PATH = os.path.join(BASE_PATH, 'audio_and_txt_files')
+AUDIO_PATH = os.path.join(BASE_PATH, 'testsample')
 DEMOGRAPHIC_FILE = os.path.join('D://github//AmpleHealth//data', 'demographic_info.txt')
 
 # Initialize analysis object
@@ -23,9 +23,9 @@ def load_data():
     analysis.load_diagnosis_data()
     analysis.load_audio_files()
     analysis.analyze_audio_properties()
-    return analysis.diagnosis_df, analysis.audio_files, analysis.audio_df
+    return analysis.diagnosis_df,  analysis.audio_df
 
-diagnosis_df, audio_files, audio_df = load_data()
+diagnosis_df,  audio_df = load_data()
 
 # Load patient demographic data
 @st.cache_data
@@ -42,12 +42,14 @@ patient_df = load_patient_demographics()
 # Streamlit App
 st.title("Respiratory Sound Data Explorer")
 
-# Sidebar
-st.sidebar.title("Navigation")
-exploration_tab = st.sidebar.radio("Select a Tab:", ["Overview", "Explore Data", "Patient Demographics", "Preprocessing & Audio Effects"])
+# Tabs for navigation
+tabs = st.tabs(["Overview", "Explore Data", "Patient Demographics", "Preprocessing & Audio Effects"])
 
 # Overview Tab
-if exploration_tab == "Overview":
+
+
+# Overview Tab
+with tabs[0]:
     st.header("Dataset Overview")
 
     # Highlight key statistics
@@ -87,7 +89,7 @@ if exploration_tab == "Overview":
     st.pyplot(fig)
 
 # Explore Data Tab
-if exploration_tab == "Explore Data":
+with tabs[1]:
     st.header("Explore Data")
 
     if audio_df is not None and not audio_df.empty:
@@ -125,7 +127,7 @@ if exploration_tab == "Explore Data":
         st.warning("No audio data available to display.")
 
 # Patient Demographics Tab
-if exploration_tab == "Patient Demographics":
+with tabs[2]:
     st.header("Patient Demographics")
     st.subheader("Demographics Data")
     st.dataframe(patient_df)
@@ -151,34 +153,26 @@ if exploration_tab == "Patient Demographics":
     st.pyplot(fig)
 
 
-if exploration_tab == "Preprocessing & Audio Effects":
+with tabs[3]:
     st.header("Preprocessing & Audio Effects")
 
-    # Select disease and corresponding audio files
-    selected_disease = st.selectbox("Select a Disease", diagnosis_df['disease'].unique())
+    # List all .wav files in the AUDIO_PATH directory
+    wav_files = [f for f in os.listdir(AUDIO_PATH) if f.endswith('.wav')]
+    
+    if wav_files:
+        selected_file_name = st.selectbox("Select an Audio File", wav_files)
 
-    # Get matching patient IDs
-    matching_patients = diagnosis_df[diagnosis_df['disease'] == selected_disease]['patient_id']
-    st.write(f"Matching patient IDs for {selected_disease}: {list(matching_patients)}")
+        # Construct the full path of the selected file
+        file_path = os.path.join(AUDIO_PATH, selected_file_name)
 
-    # Filter files by patient ID
-    disease_files = [
-        file for file in audio_files
-        if any(str(patient_id) in os.path.basename(file) for patient_id in matching_patients)
-    ]
-
-    if disease_files:
-        selected_file = st.selectbox("Select an Audio File", disease_files)
-
-        # Load raw audio
-        file_path = selected_file
         try:
+            # Load raw audio
             y_raw, sr = librosa.load(file_path)
         except Exception as e:
             st.error(f"Error loading audio file: {e}")
             st.stop()
 
-        # Preprocessing
+        # Preprocessing and Visualization
         try:
             y_processed, processed_sr = analysis.preprocess_audio(y_raw, sr)
 
@@ -202,7 +196,7 @@ if exploration_tab == "Preprocessing & Audio Effects":
             # RMS Energy
             rms = librosa.feature.rms(y=y_processed)[0]
 
-            # Create subplots for additional visualizations
+            # Create subplots for visualizations
             fig, axs = plt.subplots(3, 2, figsize=(15, 12))
 
             # Raw waveform
@@ -250,5 +244,4 @@ if exploration_tab == "Preprocessing & Audio Effects":
         st.subheader("Listen to Audio")
         st.audio(file_path, format="audio/wav")
     else:
-        st.warning("No audio files found for the selected disease.")
- 
+        st.warning("No audio files found in the directory.")
