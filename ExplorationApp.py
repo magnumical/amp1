@@ -7,11 +7,14 @@ import librosa.display
 from Exploration.inference import RespiratorySoundAnalysis
 import seaborn as sns
 import os
+
+# Define base paths
+BASE_PATH = 'D://github//AmpleHealth//data//Respiratory_Sound_Database//Respiratory_Sound_Database'
+DIAGNOSIS_FILE = os.path.join(BASE_PATH, 'patient_diagnosis.csv')
+AUDIO_PATH = os.path.join(BASE_PATH, 'audio_and_txt_files')
+DEMOGRAPHIC_FILE = os.path.join('D://github//AmpleHealth//data', 'demographic_info.txt')
+
 # Initialize analysis object
-
-DIAGNOSIS_FILE = 'D://github//AmpleHealth//data//Respiratory_Sound_Database//Respiratory_Sound_Database/patient_diagnosis.csv'
-AUDIO_PATH = 'D://github//AmpleHealth/data/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files/'
-
 analysis = RespiratorySoundAnalysis(DIAGNOSIS_FILE, AUDIO_PATH)
 
 # Load data
@@ -22,16 +25,28 @@ def load_data():
     analysis.analyze_audio_properties()
     return analysis.diagnosis_df, analysis.audio_files, analysis.audio_df
 
-
 diagnosis_df, audio_files, audio_df = load_data()
+
+# Load patient demographic data
+@st.cache_data
+def load_patient_demographics():
+    patient_df = pd.read_csv(
+        DEMOGRAPHIC_FILE, 
+        names=['Patient number', 'Age', 'Sex', 'Adult BMI (kg/m2)', 'Child Weight (kg)', 'Child Height (cm)'],
+        delimiter=' '
+    )
+    return patient_df
+
+patient_df = load_patient_demographics()
 
 # Streamlit App
 st.title("Respiratory Sound Data Explorer")
 
 # Sidebar
 st.sidebar.title("Navigation")
-exploration_tab = st.sidebar.radio("Select a Tab:", ["Overview", "Explore Data", "Preprocessing & Audio Effects"])
+exploration_tab = st.sidebar.radio("Select a Tab:", ["Overview", "Explore Data", "Patient Demographics", "Preprocessing & Audio Effects"])
 
+# Overview Tab
 if exploration_tab == "Overview":
     st.header("Dataset Overview")
 
@@ -51,7 +66,7 @@ if exploration_tab == "Overview":
     st.subheader("Diagnosis Distribution")
     disease_counts = diagnosis_df['disease'].value_counts()
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(y=disease_counts.index, x=disease_counts.values, palette="viridis", ax=ax,legend=False)
+    sns.barplot(y=disease_counts.index, x=disease_counts.values, palette="viridis", ax=ax, legend=False, hue=disease_counts.index, dodge=False)
     ax.set_title("Disease Distribution", fontsize=16, fontweight='bold')
     ax.set_xlabel("Number of Patients", fontsize=12)
     ax.set_ylabel("Disease", fontsize=12)
@@ -63,7 +78,7 @@ if exploration_tab == "Overview":
     st.subheader("Disease Proportion")
     disease_proportions = diagnosis_df['disease'].value_counts(normalize=True) * 100
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(y=disease_proportions.index, x=disease_proportions.values, palette="coolwarm", ax=ax,legend=False)
+    sns.barplot(y=disease_proportions.index, x=disease_proportions.values, hue=disease_proportions.index, dodge=False, palette="coolwarm", ax=ax, legend=False)
     ax.set_title("Disease Proportion (%)", fontsize=16, fontweight='bold')
     ax.set_xlabel("Proportion (%)", fontsize=12)
     ax.set_ylabel("Disease", fontsize=12)
@@ -71,25 +86,18 @@ if exploration_tab == "Overview":
         ax.text(v + 0.5, i, f"{v:.1f}%", color='black', fontsize=10, va='center')
     st.pyplot(fig)
 
-
+# Explore Data Tab
 if exploration_tab == "Explore Data":
     st.header("Explore Data")
 
     if audio_df is not None and not audio_df.empty:
         # Key Audio Insights
-        total_files = len(audio_df)
-        avg_duration = audio_df['duration_sec'].mean()
-        min_duration = audio_df['duration_sec'].min()
-        max_duration = audio_df['duration_sec'].max()
-        shortest_file = audio_df.loc[audio_df['duration_sec'].idxmin(), 'file_name']
-        longest_file = audio_df.loc[audio_df['duration_sec'].idxmax(), 'file_name']
-
         st.subheader("Key Audio Insights")
         st.markdown(f"""
-        - **Total Audio Files:** {total_files}
-        - **Average Duration:** {avg_duration:.2f} seconds
-        - **Shortest Audio File:** {shortest_file} ({min_duration:.2f} seconds)
-        - **Longest Audio File:** {longest_file} ({max_duration:.2f} seconds)
+        - **Total Audio Files:** {len(audio_df)}
+        - **Average Duration:** {audio_df['duration_sec'].mean():.2f} seconds
+        - **Shortest Audio File:** {audio_df.loc[audio_df['duration_sec'].idxmin(), 'file_name']} ({audio_df['duration_sec'].min():.2f} seconds)
+        - **Longest Audio File:** {audio_df.loc[audio_df['duration_sec'].idxmax(), 'file_name']} ({audio_df['duration_sec'].max():.2f} seconds)
         """)
 
         # Duration Distribution
@@ -103,36 +111,44 @@ if exploration_tab == "Explore Data":
 
         # Highlight Outliers
         st.subheader("Audio Duration Outliers")
-        outlier_threshold = st.slider(
-            "Set Outlier Threshold (seconds):",
-            min_value=1.0,
-            max_value=float(max_duration),
-            value=25.0,
-            step=0.5,
-        )
+        outlier_threshold = st.slider("Set Outlier Threshold (seconds):", 1.0, float(audio_df['duration_sec'].max()), 25.0, step=0.5)
         outliers = audio_df[audio_df['duration_sec'] > outlier_threshold]
-        if not outliers.empty:
-            st.markdown(f"**Number of Outliers:** {len(outliers)}")
-            st.write(outliers[['file_name', 'duration_sec']])
-        else:
-            st.markdown("No outliers found above the threshold.")
+        st.write(outliers if not outliers.empty else "No outliers found above the threshold.")
 
         # Optional Filtering
         st.subheader("Filter Audio Files by Duration")
-        min_range, max_range = st.slider(
-            "Select Duration Range (seconds):",
-            min_value=0.0,
-            max_value=float(max_duration),
-            value=(0.0, float(max_duration)),
-            step=0.5,
-        )
-        filtered_files = audio_df[
-            (audio_df['duration_sec'] >= min_range) & (audio_df['duration_sec'] <= max_range)
-        ]
+        min_range, max_range = st.slider("Select Duration Range (seconds):", 0.0, float(audio_df['duration_sec'].max()), (0.0, float(audio_df['duration_sec'].max())), step=0.5)
+        filtered_files = audio_df[(audio_df['duration_sec'] >= min_range) & (audio_df['duration_sec'] <= max_range)]
         st.write(f"**Number of Files in Range:** {len(filtered_files)}")
-        st.write(filtered_files[['file_name', 'duration_sec']])
+        st.dataframe(filtered_files[['file_name', 'duration_sec']])
     else:
         st.warning("No audio data available to display.")
+
+# Patient Demographics Tab
+if exploration_tab == "Patient Demographics":
+    st.header("Patient Demographics")
+    st.subheader("Demographics Data")
+    st.dataframe(patient_df)
+
+    st.subheader("Missing Values Information")
+    st.write(patient_df.isna().sum())
+
+    st.subheader("Key Statistics")
+    avg_age, min_age, max_age = patient_df['Age'].mean(), patient_df['Age'].min(), patient_df['Age'].max()
+    st.markdown(f"- **Average Age:** {avg_age:.1f} years\n- **Youngest Patient:** {min_age} years\n- **Oldest Patient:** {max_age} years")
+
+    # Visualizations
+    st.markdown("### Age Distribution")
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.histplot(patient_df['Age'].dropna(), bins=20, kde=True, color='skyblue', ax=ax)
+    ax.set_title("Age Distribution", fontsize=16, fontweight='bold')
+    st.pyplot(fig)
+
+    st.markdown("### Gender Distribution")
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(x=patient_df['Sex'].value_counts().index, y=patient_df['Sex'].value_counts().values, palette="coolwarm", ax=ax, hue=patient_df['Sex'].value_counts().index, dodge=False)
+    ax.set_title("Gender Distribution", fontsize=16, fontweight='bold')
+    st.pyplot(fig)
 
 
 if exploration_tab == "Preprocessing & Audio Effects":
@@ -235,3 +251,4 @@ if exploration_tab == "Preprocessing & Audio Effects":
         st.audio(file_path, format="audio/wav")
     else:
         st.warning("No audio files found for the selected disease.")
+ 
