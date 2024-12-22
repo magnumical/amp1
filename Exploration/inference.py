@@ -32,7 +32,14 @@ class RespiratorySoundAnalysis:
     def plot_disease_distribution(self):
         """Plot disease distribution."""
         plt.figure(figsize=(10, 6))
-        sns.countplot(y=self.diagnosis_df['disease'], order=self.diagnosis_df['disease'].value_counts().index, palette='viridis')
+        sns.countplot(
+            y=self.diagnosis_df['disease'],
+            order=self.diagnosis_df['disease'].value_counts().index,
+            hue=self.diagnosis_df['disease'],
+            palette='viridis',
+            dodge=False,
+            legend=False
+        )
         plt.title("Disease Distribution")
         plt.xlabel("Count")
         plt.ylabel("Disease")
@@ -77,14 +84,17 @@ class RespiratorySoundAnalysis:
             return
 
         audio_properties = []
-        for file in self.audio_files[:]:
-            file_path = os.path.join(self.audio_path, file)
+
+        for file_path in self.audio_files:
             if not os.path.exists(file_path):
                 print(f"File not found: {file_path}")
                 continue
-            props = self.extract_audio_properties(file_path)
-            props['file_name'] = file
-            audio_properties.append(props)
+            try:
+                props = self.extract_audio_properties(file_path)
+                props['file_name'] = file_path
+                audio_properties.append(props)
+            except Exception as e:
+                print(f"Error analyzing {file_path}: {e}")
 
         if audio_properties:
             self.audio_df = pd.DataFrame(audio_properties)
@@ -98,12 +108,17 @@ class RespiratorySoundAnalysis:
 
     def plot_audio_duration_distribution(self):
         """Plot distribution of audio durations."""
+        if self.audio_df is None or 'duration_sec' not in self.audio_df:
+            print("Audio data is not available for plotting. Please ensure audio files are analyzed first.")
+            return
+
         plt.figure(figsize=(10, 6))
         sns.histplot(self.audio_df['duration_sec'], kde=True, bins=20, color='skyblue')
         plt.title("Audio Duration Distribution")
         plt.xlabel("Duration (seconds)")
         plt.ylabel("Frequency")
         plt.show()
+
 
     def visualize_sample_audio(self, file_name):
         """Visualize a sample audio file."""
@@ -136,6 +151,10 @@ class RespiratorySoundAnalysis:
 
     def merge_audio_and_diagnosis_data(self):
         """Combine audio stats with diagnosis data."""
+        if self.audio_df is None:
+            print("Audio data is not available. Please analyze audio properties before merging.")
+            return
+
         # Extract file name without the full path
         self.audio_df['file_name_only'] = self.audio_df['file_name'].apply(os.path.basename)
 
@@ -145,7 +164,7 @@ class RespiratorySoundAnalysis:
         except ValueError as e:
             print(f"Error extracting patient_id: {e}")
             print(self.audio_df['file_name_only'].head())  # Debugging information
-            raise
+            return
 
         # Merge with diagnosis data
         self.merged_df = pd.merge(
@@ -158,6 +177,7 @@ class RespiratorySoundAnalysis:
         print("\nMerged Audio and Diagnosis Data:")
         print(self.merged_df.head())
 
+
     def preprocess_audio(self, y, sr, target_sr=7000, low_cutoff=80, high_cutoff=3000, gamma=30):
         """Preprocess audio by resampling, bandpass filtering, log compression, and normalization."""
         y_resampled = librosa.resample(y, orig_sr=sr, target_sr=target_sr)
@@ -169,8 +189,8 @@ class RespiratorySoundAnalysis:
 
 # Entry point for standalone execution
 if __name__ == "__main__":
-    diagnosis_file = 'D://github//AmpleHealth//data//Respiratory_Sound_Database//patient_diagnosis.csv'
-    audio_path = 'D://github//AmpleHealth/data/Respiratory_Sound_Database/audio_and_txt_files/'
+    diagnosis_file = '../data//Respiratory_Sound_Database//patient_diagnosis.csv'
+    audio_path = '../data/Respiratory_Sound_Database/testsample'
 
     analysis = RespiratorySoundAnalysis(diagnosis_file, audio_path)
 
