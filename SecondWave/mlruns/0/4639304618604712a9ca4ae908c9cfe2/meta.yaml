@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/4639304618604712a9ca4ae908c9cfe2/artifacts
+end_time: 1734843379278
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4639304618604712a9ca4ae908c9cfe2
+run_name: nimble-moth-86
+run_uuid: 4639304618604712a9ca4ae908c9cfe2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734843373754
+status: 3
+tags: []
+user_id: root

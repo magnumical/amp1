@@ -1,28 +1,33 @@
 from sklearn.metrics import classification_report
 import mlflow
 
+ 
+import numpy as np
 
 def log_metrics(y_true, y_pred, mode):
     """
     Log evaluation metrics for binary or multi-class classification.
-    
+
     Args:
-        y_true: True labels (array-like).
-        y_pred: Predicted labels (array-like).
+        y_true: True labels (array-like, one-hot encoded for multi-class).
+        y_pred: Predicted probabilities (array-like, continuous values).
         mode: Mode of classification ('binary' or 'multi-class').
     """
+    # Convert one-hot encoded `y_true` to class indices
+    if y_true.ndim > 1:  # If one-hot encoded
+        y_true = np.argmax(y_true, axis=1)
+    
+    # Convert predicted probabilities `y_pred` to class indices
+    if y_pred.ndim > 1:  # If predicted as probabilities
+        y_pred = np.argmax(y_pred, axis=1)
+
     if mode == 'binary':
-        classification = classification_report(
-            y_true, y_pred, output_dict=True, target_names=["Class 0", "Class 1"]
-        )
         class_names = ["Class 0", "Class 1"]
+        classification = classification_report(y_true, y_pred, output_dict=True, target_names=class_names)
     else:
-        # Use np.unique instead of set for numpy arrays
         unique_classes = np.unique(y_true)
         class_names = [f"Class {i}" for i in unique_classes]
-        classification = classification_report(
-            y_true, y_pred, output_dict=True, target_names=class_names
-        )
+        classification = classification_report(y_true, y_pred, output_dict=True, target_names=class_names)
 
     # Log metrics to MLflow
     precision = classification['weighted avg']['precision']

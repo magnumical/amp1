@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/d4dec471f1fe4ef4b8c02228acea03a0/artifacts
+end_time: 1734844562850
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d4dec471f1fe4ef4b8c02228acea03a0
+run_name: amusing-shark-511
+run_uuid: d4dec471f1fe4ef4b8c02228acea03a0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844557296
+status: 3
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/3433db34981140cbae7c8ee0cfb2a3c5/artifacts
+end_time: 1734843341330
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3433db34981140cbae7c8ee0cfb2a3c5
+run_name: legendary-shrew-534
+run_uuid: 3433db34981140cbae7c8ee0cfb2a3c5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734843335897
+status: 3
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/7f7c2bbd01bd464b9adaf4f93f2fc92a/artifacts
+end_time: 1734843335891
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 7f7c2bbd01bd464b9adaf4f93f2fc92a
+run_name: dazzling-slug-591
+run_uuid: 7f7c2bbd01bd464b9adaf4f93f2fc92a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734843330381
+status: 3
+tags: []
+user_id: root

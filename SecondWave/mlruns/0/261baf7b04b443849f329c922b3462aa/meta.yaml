@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/261baf7b04b443849f329c922b3462aa/artifacts
+end_time: 1734844557289
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 261baf7b04b443849f329c922b3462aa
+run_name: nebulous-finch-561
+run_uuid: 261baf7b04b443849f329c922b3462aa
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844551665
+status: 3
+tags: []
+user_id: root

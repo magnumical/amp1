@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/19b727c3dc3743778954493ee88431e3/artifacts
+end_time: 1734844584846
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 19b727c3dc3743778954493ee88431e3
+run_name: upset-pug-314
+run_uuid: 19b727c3dc3743778954493ee88431e3
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844579297
+status: 3
+tags: []
+user_id: root

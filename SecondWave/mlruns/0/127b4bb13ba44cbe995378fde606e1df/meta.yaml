@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/127b4bb13ba44cbe995378fde606e1df/artifacts
+end_time: 1734843303627
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 127b4bb13ba44cbe995378fde606e1df
+run_name: unequaled-bear-801
+run_uuid: 127b4bb13ba44cbe995378fde606e1df
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734843297999
+status: 3
+tags: []
+user_id: root

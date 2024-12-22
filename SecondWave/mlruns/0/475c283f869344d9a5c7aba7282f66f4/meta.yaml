@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/475c283f869344d9a5c7aba7282f66f4/artifacts
+end_time: 1734843216048
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 475c283f869344d9a5c7aba7282f66f4
+run_name: illustrious-bee-675
+run_uuid: 475c283f869344d9a5c7aba7282f66f4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734843210459
+status: 3
+tags: []
+user_id: root

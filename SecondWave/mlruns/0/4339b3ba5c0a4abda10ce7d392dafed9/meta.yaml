@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/4339b3ba5c0a4abda10ce7d392dafed9/artifacts
+end_time: 1734844783121
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4339b3ba5c0a4abda10ce7d392dafed9
+run_name: valuable-hawk-684
+run_uuid: 4339b3ba5c0a4abda10ce7d392dafed9
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844777612
+status: 3
+tags: []
+user_id: root

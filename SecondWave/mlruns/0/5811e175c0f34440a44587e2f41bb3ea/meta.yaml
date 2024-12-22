@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/5811e175c0f34440a44587e2f41bb3ea/artifacts
+end_time: 1734844756025
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5811e175c0f34440a44587e2f41bb3ea
+run_name: selective-frog-847
+run_uuid: 5811e175c0f34440a44587e2f41bb3ea
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844750692
+status: 3
+tags: []
+user_id: root

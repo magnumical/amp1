@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/ce93f0c64be844339d4897705bd5f7bd/artifacts
+end_time: 1734844767006
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ce93f0c64be844339d4897705bd5f7bd
+run_name: fearless-shrike-609
+run_uuid: ce93f0c64be844339d4897705bd5f7bd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844761500
+status: 3
+tags: []
+user_id: root

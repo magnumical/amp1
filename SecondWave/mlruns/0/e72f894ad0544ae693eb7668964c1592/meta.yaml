@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/e72f894ad0544ae693eb7668964c1592/artifacts
+end_time: 1734844794249
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: e72f894ad0544ae693eb7668964c1592
+run_name: puzzled-hare-985
+run_uuid: e72f894ad0544ae693eb7668964c1592
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844788592
+status: 3
+tags: []
+user_id: root

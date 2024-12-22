@@ -3,7 +3,7 @@ import numpy as np
 from utils.data_loader import load_data, process_audio_metadata
 from utils.audioprocessing import *
 from utils.model_utils import * 
-
+import joblib
 from utils.evaluation import log_metrics, plot_roc_curve, plot_confusion_matrix
 import os
 import gc
@@ -82,19 +82,16 @@ def load_or_process_dataset(df_filtered, audio_files_path, mode, output_dir="pro
         processing_logger.info(f"Preprocessed files not found for mode '{mode}'. Processing data...")
         os.makedirs(output_dir, exist_ok=True)
 
-        if mode == 'gru':
-            X, y, le = prepare_dataset_with_gru(df_filtered, audio_files_path)
+        if mode == 'augmented':
+            X, y, le = prepare_dataset_augmented(df_filtered, audio_files_path)
         else:
             X, y, le = prepare_dataset_parallel(df_filtered, audio_files_path, mode=mode)
 
-        # Encode labels
-        le = LabelEncoder()
-        y = to_categorical(le.fit_transform(np.array(y)))
+
 
         # Save the processed data and LabelEncoder
         np.save(X_path, X)
         np.save(y_path, y)
-        joblib.dump(le, le_path)
         processing_logger.info(f"Saved processed dataset and LabelEncoder for mode '{mode}' to {output_dir}")
 
     le = LabelEncoder()
@@ -109,100 +106,110 @@ def main():
     df = load_data()
     audio_metadata = process_audio_metadata(METADATA_PATH)
     df_all = merge_datasets(audio_metadata, df)
-    df_filtered = filter_and_sample_data(df_all)
 
-    # Modes to process
-    modes = ['gru', 'mfcc', 'log_mel']
+    # Define classification modes and feature types
+    classification_modes = [ 'multi', 'binary']#
+    feature_types = [ 'augmented','mfcc', 'log_mel'] #, 
 
-    for mode in modes:
-        processing_logger.info(f"Preparing dataset for mode: {mode}")
-        
-        # Load or process dataset
-        X, y, le = load_or_process_dataset(df_filtered, AUDIO_FILES_PATH, mode)
+    for classification_mode in classification_modes:
+        # Preprocess dataset for binary or multi-class classification
+        df_filtered = filter_and_sample_data(df_all, mode=classification_mode)
 
-        # Log input dimensions
-        processing_logger.info(f"Input data dimensions for mode {mode}: {X.shape}")
-        processing_logger.info(f"Output data dimensions for mode {mode}: {y.shape}")
+        for feature_type in feature_types:
+            processing_logger.info(f"Preparing dataset for {classification_mode} classification with {feature_type} features.")
+            
+            # Load or process dataset
+            X, y, le = load_or_process_dataset(df_filtered, AUDIO_FILES_PATH, feature_type, output_dir=f"processed_datasets/{classification_mode}")
 
-        # Split dataset
-        processing_logger.info("Splitting dataset...")
-        X_train, X_val, X_test, y_train, y_val, y_test = split_dataset(X, y)
+            # Log input dimensions
+            processing_logger.info(f"Input data dimensions for {feature_type}: {X.shape}")
+            processing_logger.info(f"Output data dimensions for {feature_type}: {y.shape}")
 
-        # Check for class balance
-        unique_classes, class_counts = np.unique(np.argmax(y_train, axis=1), return_counts=True)
-        processing_logger.info(f"Classes in y_train for {mode}: {unique_classes}, Counts: {class_counts}")
-        if len(unique_classes) <= 1:
-            raise ValueError(f"Insufficient class diversity in y_train for {mode} mode.")
+            # Split dataset
+            processing_logger.info("Splitting dataset...")
+            X_train, X_val, X_test, y_train, y_val, y_test = split_dataset(X, y)
 
-        # Oversample for GRU models
-        if mode == 'gru':
+            # Check for class balance
+            unique_classes, class_counts = np.unique(np.argmax(y_train, axis=1), return_counts=True)
+            processing_logger.info(f"Class distribution before oversampling: {dict(zip(unique_classes, class_counts))}")
+
             try:
                 X_train, y_train = oversample_data(X_train, y_train)
+                unique_classes, class_counts = np.unique(np.argmax(y_train, axis=1), return_counts=True)
+                processing_logger.info(f"Class distribution after oversampling: {dict(zip(unique_classes, class_counts))}")
             except ValueError as e:
                 processing_logger.warning(f"SMOTE skipped: {e}")
 
-        # Log dimensions after preprocessing
-        processing_logger.info(f"Training data dimensions for {mode}: X_train={X_train.shape}, y_train={y_train.shape}")
-        processing_logger.info(f"Validation data dimensions for {mode}: X_val={X_val.shape}, y_val={y_val.shape}")
-        processing_logger.info(f"Test data dimensions for {mode}: X_test={X_test.shape}, y_test={y_test.shape}")
 
-        # Optimize and train model
-        model_logger.info(f"Running optimization for {mode} mode...")
-        if mode == 'gru':
-            X_train = np.expand_dims(X_train, axis=1)
-            X_val = np.expand_dims(X_val, axis=1)
-            X_test = np.expand_dims(X_test, axis=1)
+            # Log dimensions after preprocessing
+            processing_logger.info(f"Training data dimensions for {feature_type}: X_train={X_train.shape}, y_train={y_train.shape}")
+            processing_logger.info(f"Validation data dimensions for {feature_type}: X_val={X_val.shape}, y_val={y_val.shape}")
+            processing_logger.info(f"Test data dimensions for {feature_type}: X_test={X_test.shape}, y_test={y_test.shape}")
 
-            model_logger.info(f"Updated GRU Input dimensions: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
+            # Train and optimize model
+            model_logger.info(f"Running optimization for {feature_type} mode...")
+            
+            if feature_type == 'augmented':  # Train 1D CNN for GRU features
+                X_train = np.expand_dims(X_train, axis=-1)
+                X_val = np.expand_dims(X_val, axis=-1)
+                X_test = np.expand_dims(X_test, axis=-1)
 
-            study = optuna.create_study(direction="maximize")
-            study.optimize(lambda trial: optimize_gru_model(
-                trial, X_train.shape[1:], y_train.shape[1], X_train, y_train, X_val, y_val
-            ), n_trials=20)
+                model_logger.info(f"Updated 1D CNN Input dimensions: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
 
-            best_params = study.best_params
-            model_logger.info(f"Best GRU Hyperparameters: {best_params}")
+                best_params = run_optuna_optimization(
+                    model_type="1D",
+                    input_shape=X_train.shape[1:],
+                    num_classes=y_train.shape[1],
+                    X_train=X_train,
+                    y_train=y_train,
+                    X_val=X_val,
+                    y_val=y_val,
+                    n_trials=20
+                )
+                best_model = build_cnn_model(
+                    input_shape=X_train.shape[1:],
+                    n_filters=best_params["n_filters"],
+                    dense_units=best_params["dense_units"],
+                    dropout_rate=best_params["dropout_rate"],
+                    num_classes=y_train.shape[1],
+                    model_type="1D"
+                )
+            else:  # Train 2D CNN for MFCC and Log-Mel
+                best_params = run_optuna_optimization(
+                    model_type="2D",
+                    input_shape=X_train.shape[1:],
+                    num_classes=y_train.shape[1],
+                    X_train=X_train,
+                    y_train=y_train,
+                    X_val=X_val,
+                    y_val=y_val,
+                    n_trials=20
+                )
+                best_model = build_cnn_model(
+                    input_shape=X_train.shape[1:],
+                    n_filters=best_params["n_filters"],
+                    dense_units=best_params["dense_units"],
+                    dropout_rate=best_params["dropout_rate"],
+                    num_classes=y_train.shape[1],
+                    model_type="2D"
+                )
 
-            best_model = build_gru_model(
-                input_shape=X_train.shape[1:],
-                num_units=best_params["num_units"],
-                dropout_rate=best_params["dropout_rate"],
-                num_classes=y_train.shape[1]
-            )
-        else:
-            best_params = run_optuna_optimization(
-                model_type="cnn", 
-                input_shape=X_train.shape[1:], 
-                num_classes=y_train.shape[1], 
-                X_train=X_train, 
-                y_train=y_train, 
-                X_val=X_val, 
-                y_val=y_val, 
-                n_trials=20
-            )
-            best_model = build_cnn_model(
-                input_shape=X_train.shape[1:],
-                n_filters=best_params["n_filters"],
-                dense_units=best_params["dense_units"],
-                dropout_rate=best_params["dropout_rate"],
-                num_classes=y_train.shape[1]
-            )
+            model_logger.info(f"Model input shape: {X_train.shape[1:]}")
+            model_logger.info(f"Number of output classes: {y_train.shape[1]}")
 
-        model_logger.info(f"Model input shape: {X_train.shape[1:]}")
-        model_logger.info(f"Number of output classes: {y_train.shape[1]}")
+            # Train and save the model
+            best_model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=32)
+            model_path = f"./best_model_{classification_mode}_{feature_type}.h5"
+            best_model.save(model_path)
+            mlflow.log_artifact(model_path)
 
-        # Train and save the model
-        best_model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=32)
-        model_path = f"./best_model_{mode}.h5"
-        best_model.save(model_path)
-        mlflow.log_artifact(model_path)
-
-        # Evaluate model
-        y_pred = best_model.predict(X_test)
-        log_metrics(y_test, y_pred, mode)
-
+            # Evaluate model
+            y_pred = best_model.predict(X_test)
+            log_metrics(y_test, y_pred, f"{classification_mode}_{feature_type}")
 
     data_logger.info("Pipeline completed successfully.")
 
+
 if __name__ == "__main__":
     main()
+

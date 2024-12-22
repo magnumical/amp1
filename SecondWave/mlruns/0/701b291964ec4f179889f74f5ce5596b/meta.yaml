@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/701b291964ec4f179889f74f5ce5596b/artifacts
+end_time: 1734844664961
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 701b291964ec4f179889f74f5ce5596b
+run_name: chill-doe-268
+run_uuid: 701b291964ec4f179889f74f5ce5596b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844659541
+status: 3
+tags: []
+user_id: root

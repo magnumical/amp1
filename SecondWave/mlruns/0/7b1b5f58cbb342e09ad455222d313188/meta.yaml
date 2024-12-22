@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/7b1b5f58cbb342e09ad455222d313188/artifacts
+end_time: 1734843395484
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 7b1b5f58cbb342e09ad455222d313188
+run_name: gifted-ray-732
+run_uuid: 7b1b5f58cbb342e09ad455222d313188
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734843390161
+status: 3
+tags: []
+user_id: root

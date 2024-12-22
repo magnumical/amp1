@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/3a26b41dd18d4f07b26ff8935b46ee84/artifacts
+end_time: 1734844750688
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3a26b41dd18d4f07b26ff8935b46ee84
+run_name: magnificent-elk-386
+run_uuid: 3a26b41dd18d4f07b26ff8935b46ee84
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844745469
+status: 3
+tags: []
+user_id: root

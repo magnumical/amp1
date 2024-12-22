@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/4e8a31c03ec0446ba82086ff3745f63f/artifacts
+end_time: 1734844670688
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4e8a31c03ec0446ba82086ff3745f63f
+run_name: omniscient-stoat-272
+run_uuid: 4e8a31c03ec0446ba82086ff3745f63f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844664966
+status: 3
+tags: []
+user_id: root

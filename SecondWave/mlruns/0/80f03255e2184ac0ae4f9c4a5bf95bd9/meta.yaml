@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/80f03255e2184ac0ae4f9c4a5bf95bd9/artifacts
+end_time: 1734844734755
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 80f03255e2184ac0ae4f9c4a5bf95bd9
+run_name: resilient-jay-726
+run_uuid: 80f03255e2184ac0ae4f9c4a5bf95bd9
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844729172
+status: 3
+tags: []
+user_id: root

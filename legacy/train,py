@@ -23,6 +23,13 @@ from keras.preprocessing.image import ImageDataGenerator
 from imblearn.over_sampling import SMOTE
 
 
+from keras.models import Sequential
+from keras.layers import (
+    Conv1D, Conv2D, MaxPooling1D, MaxPooling2D,
+    GlobalAveragePooling1D, GlobalAveragePooling2D,
+    Dense, Dropout, BatchNormalization
+)
+
 
 from tensorflow.keras.models import Sequential, Model, load_model
 
@@ -122,7 +129,7 @@ def mfccs_feature_exteraction(audio_files_path, df_filtered, n_jobs=-1):
     processing_logger.info(f"Processing audio files in: {audio_files_path}")
     files = [file for file in os.listdir(audio_files_path) if file.endswith('.wav') and file[:3] not in ['103', '108', '115']]
    
-    #files = files[:40] ## DEBUG
+    files = files[:30] ## DEBUG
 
     # Use Parallel and delayed to process files in parallel
     results = Parallel(n_jobs=n_jobs, backend="loky")(delayed(process_audio_file)(file, audio_files_path, df_filtered) for file in tqdm(files, desc="Processing audio files"))
@@ -162,11 +169,22 @@ def pitch_shift (data , rate):
 def prepare_dataset_with_gru(df_filtered, audio_files_path):
     """Prepare the dataset using the GRU pipeline."""
     processing_logger.info("Preparing dataset with GRU pipeline.")
-    X, y = mfccs_feature_exteraction(audio_files_path, df_filtered)  # Pass filtered DataFrame
+    
+    # Extract features and labels
+    X, y = mfccs_feature_exteraction(audio_files_path, df_filtered)
+    
+    # Apply label encoding
     le = LabelEncoder()
-    y = to_categorical(le.fit_transform(np.array(y)))
+    y_encoded = le.fit_transform(np.array(y))  # Encode labels to integers
+    y_one_hot = to_categorical(y_encoded)      # Convert to one-hot encoding
+    
+    # Log the mapping of one-hot encoding to class labels
+    print("One-hot encoding mapping:")
+    for idx, label in enumerate(le.classes_):
+        print(f"{idx} -> {label}")
+    
     processing_logger.info("Dataset preparation with GRU pipeline complete.")
-    return X, y, le
+    return X, y_one_hot, le
 
 
 
@@ -197,20 +215,40 @@ def merge_datasets(df1, df2):
 
 def filter_and_sample_data(df, mode='binary'):
     """
-    Filter and sample the dataset.
-    
+    Filter and sample the dataset for binary or multi-class classification.
+
     Args:
         df: Input DataFrame containing diagnosis data.
-        mode: Specify 'binary' for Normal/Abnormal or 'multiclass' for original labels.
-        
+        mode: Specify 'binary' for Normal/Abnormal or 'multi-class' for grouped classes.
+
     Returns:
         Filtered and processed DataFrame.
     """
-    processing_logger.info("Filtering and sampling the dataset.")
+    processing_logger.info(f"Filtering and sampling the dataset for {mode} classification.")
+    
     if mode == 'binary':
-        df['Diagnosis'] = df['Diagnosis'].apply(lambda x: 'Abnormal' if x != 'Healthy' else 'Normal')
-    # Else, keep original multiclass labels
-    df = df.sort_values('Patient number').reset_index(drop=True)
+        # Binary classification: Normal vs. Abnormal
+        df['Diagnosis'] = df['Diagnosis'].apply(lambda x: 'Normal' if x == 'Healthy' else 'Abnormal')
+    elif mode == 'multi':
+        # Multi-class classification: Group classes
+        processing_logger.info("Grouping classes for multi-class classification.")
+        df['Diagnosis'] = df['Diagnosis'].replace({
+            'Healthy': 'Normal',
+            'COPD': 'Chronic Respiratory Diseases',
+            'Asthma': 'Chronic Respiratory Diseases',
+            'URTI': 'Respiratory Infections',
+            'Bronchiolitis': 'Respiratory Infections',
+            'LRTI': 'Respiratory Infections',
+            'Pneumonia': 'Respiratory Infections',
+            'Bronchiectasis': 'Respiratory Infections'
+        })
+
+    # Filter out rare classes with fewer than 5 samples
+    class_counts = df['Diagnosis'].value_counts()
+    valid_classes = class_counts[class_counts >= 5].index
+    df = df[df['Diagnosis'].isin(valid_classes)].reset_index(drop=True)
+
+    processing_logger.info(f"Filtered classes: {df['Diagnosis'].unique()}")
     processing_logger.info(f"Filtering and sampling complete with mode={mode}.")
     return df
 
@@ -256,12 +294,7 @@ def augment_data(X, y):
     processing_logger.info("Data augmentation setup complete.")
     return datagen
 
-def preprocess_file(row, audio_files_path, mode):
-    """Preprocess a single audio file."""
-    file_path = os.path.join(audio_files_path, row['audio_file_name'])
-    feature = preprocessing(file_path, mode)
-    label = row['Diagnosis']
-    return feature, label
+
 
 def prepare_dataset_parallel(df, audio_files_path, mode):
     """Prepare the dataset by extracting features from audio files in parallel."""
@@ -278,6 +311,13 @@ def prepare_dataset_parallel(df, audio_files_path, mode):
     processing_logger.info(f"Dataset preparation using {mode} complete.")
     return X, y, le
 
+def preprocess_file(row, audio_files_path, mode):
+    """Preprocess a single audio file."""
+    file_path = os.path.join(audio_files_path, row['audio_file_name'])
+    feature = preprocessing(file_path, mode)
+    label = row['Diagnosis']
+    return feature, label
+    
 def preprocessing(audio_file, mode):
     """Preprocess audio file by resampling, padding/truncating, and extracting features."""
     sr_new = 16000  # Resample audio to 16 kHz
@@ -319,34 +359,77 @@ def prepare_dataset(df, audio_files_path, mode):
     processing_logger.info(f"Dataset preparation using {mode} complete.")
     return X, y, le
 
-def build_model(input_shape, n_filters, dense_units, dropout_rate):
-    """Build and compile the updated CNN model."""
-    model_logger.info("Building the updated CNN model.")
-    model = Sequential([
-        Conv2D(n_filters, (3, 3), activation='relu', input_shape=input_shape),
-        BatchNormalization(),
-        MaxPooling2D((2, 2)) if input_shape[0] >= 2 else None,
-        Dropout(dropout_rate),
 
-        Conv2D(n_filters * 2, (3, 3), activation='relu'),
-        BatchNormalization(),
-        MaxPooling2D((2, 2)) if input_shape[0] >= 4 else None,
-        Dropout(dropout_rate),
 
-        Conv2D(n_filters * 4, (3, 3), activation='relu'),
-        BatchNormalization(),
-        # Use GlobalAveragePooling2D to handle small spatial dimensions
-        GlobalAveragePooling2D(),
-        Dropout(dropout_rate),
+def build_model(input_shape, n_filters, dense_units, dropout_rate, num_classes, model_type='1D'):
+    """
+    Build and compile a CNN model for 1D or 2D data.
 
-        Dense(dense_units, activation='relu'),
-        BatchNormalization(),
-        Dropout(dropout_rate),
-        Dense(2, activation='softmax')
-    ])
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    model_logger.info("Model built and compiled successfully.")
+    Args:
+        input_shape: Tuple specifying the input shape.
+        n_filters: Number of filters in the first convolutional layer.
+        dense_units: Number of units in the dense layer.
+        dropout_rate: Dropout rate for regularization.
+        num_classes: Number of output classes.
+        model_type: '1D' for 1D CNN or '2D' for 2D CNN.
+
+    Returns:
+        Compiled CNN model.
+    """
+    print(f"Building the updated {model_type} CNN model.")
+    model = Sequential()
+
+    if model_type == '1D':
+        # 1D CNN layers
+        model.add(Conv1D(n_filters, kernel_size=3, activation='relu', input_shape=input_shape))
+        model.add(BatchNormalization())
+        model.add(MaxPooling1D(pool_size=2))
+        model.add(Dropout(dropout_rate))
+
+        model.add(Conv1D(n_filters * 2, kernel_size=3, activation='relu'))
+        model.add(BatchNormalization())
+        model.add(MaxPooling1D(pool_size=2))
+        model.add(Dropout(dropout_rate))
+
+        model.add(Conv1D(n_filters * 4, kernel_size=3, activation='relu'))
+        model.add(BatchNormalization())
+        model.add(GlobalAveragePooling1D())
+        model.add(Dropout(dropout_rate))
+
+    elif model_type == '2D':
+        # 2D CNN layers
+        model.add(Conv2D(n_filters, (3, 3), activation='relu', input_shape=input_shape))
+        model.add(BatchNormalization())
+        if input_shape[0] >= 2:
+            model.add(MaxPooling2D((2, 2)))
+        model.add(Dropout(dropout_rate))
+
+        model.add(Conv2D(n_filters * 2, (3, 3), activation='relu'))
+        model.add(BatchNormalization())
+        if input_shape[0] >= 4:
+            model.add(MaxPooling2D((2, 2)))
+        model.add(Dropout(dropout_rate))
+
+        model.add(Conv2D(n_filters * 4, (3, 3), activation='relu'))
+        model.add(BatchNormalization())
+        model.add(GlobalAveragePooling2D())
+        model.add(Dropout(dropout_rate))
+
+    else:
+        raise ValueError("Invalid model_type. Must be '1D' or '2D'.")
+
+    # Fully connected layers
+    model.add(Dense(dense_units, activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(dropout_rate))
+    model.add(Dense(num_classes, activation='sigmoid' if num_classes == 1 else 'softmax'))
+
+    # Compile the model
+    loss = 'binary_crossentropy' if num_classes == 1 else 'categorical_crossentropy'
+    model.compile(optimizer='adam', loss=loss, metrics=['accuracy'])
+    print(f"{model_type} CNN model built and compiled successfully.")
     return model
+
 
 
 def log_metrics(y_true, y_pred, mode):
@@ -400,29 +483,49 @@ def evaluate_model(model, X_test, y_test, le, mode):
     model_logger.info(f"Model evaluation using {mode} features complete.")
 
 
-def track_experiment_with_mlflow_and_optuna(mode):
-    """Optimize hyperparameters using Optuna and track experiments with MLflow."""
+def track_experiment_with_mlflow_and_optuna(mode, num_classes, model_type='1D'):
+    """
+    Optimize hyperparameters using Optuna and track experiments with MLflow.
+
+    Args:
+        mode: Feature extraction mode (e.g., 'gru', 'mfcc', 'log_mel').
+        num_classes: Number of classes for classification.
+        model_type: Type of model ('1D' for Conv1D, '2D' for Conv2D).
+    """
     def objective(trial):
         with mlflow.start_run(nested=True):  # Start a new MLflow run for each trial
             # Hyperparameters to tune
-            n_filters = trial.suggest_categorical('n_filters', [16, 32])
-            dense_units = trial.suggest_int('dense_units', 64, 128, step=32)
-            dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.3, step=0.1)
+            n_filters = trial.suggest_categorical('n_filters', [16, 32, 64])
+            dense_units = trial.suggest_int('dense_units', 64, 256, step=32)
+            dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5, step=0.1)
             learning_rate = trial.suggest_loguniform('learning_rate', 1e-4, 1e-2)
 
             # Build and compile the model
-            model = build_model(X_train.shape[1:], n_filters, dense_units, dropout_rate)
-            model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+            model = build_model(
+                input_shape=X_train.shape[1:], 
+                n_filters=n_filters, 
+                dense_units=dense_units, 
+                dropout_rate=dropout_rate,
+                num_classes=num_classes,
+                model_type=model_type  # Pass model type to build_model
+            )
+            model.compile(
+                optimizer=Adamax(learning_rate=learning_rate),
+                loss='binary_crossentropy' if num_classes == 1 else 'categorical_crossentropy',
+                metrics=['accuracy']
+            )
 
             # Train the model
-            history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=32, verbose=0)
+            history = model.fit(X_train, y_train, validation_data=(X_val, y_val), 
+                                epochs=10, batch_size=32, verbose=0)
 
             # Log hyperparameters and metrics to MLflow
             mlflow.log_params({
                 'n_filters': n_filters,
                 'dense_units': dense_units,
                 'dropout_rate': dropout_rate,
-                'learning_rate': learning_rate
+                'learning_rate': learning_rate,
+                'model_type': model_type
             })
             mlflow.log_metric("best_val_accuracy", max(history.history['val_accuracy']))
 
@@ -432,227 +535,133 @@ def track_experiment_with_mlflow_and_optuna(mode):
             plt.plot(history.history['val_loss'], label='Validation Loss')
             plt.legend()
             plt.title("Training and Validation Loss")
-            loss_curve_path = f"loss_curve_{trial.number}.png"
+            loss_curve_path = f"loss_curve_{trial.number}_{model_type}.png"
             plt.savefig(loss_curve_path)
             mlflow.log_artifact(loss_curve_path)
 
             return max(history.history['val_accuracy'])
 
+    # Start Optuna study
     study = optuna.create_study(direction='maximize')
     study.optimize(objective, n_trials=20)
 
+    # Retrieve best trial and log results
     best_trial = study.best_trial
-    model_logger.info(f"Best Trial for {mode}: {best_trial.params}")
+    model_logger.info(f"Best Trial for {mode} ({model_type}): {best_trial.params}")
 
-    best_model = build_model(X_train.shape[1:], best_trial.params['n_filters'], best_trial.params['dense_units'], best_trial.params['dropout_rate'])
-    best_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    # Build and train the best model
+    best_model = build_model(
+        input_shape=X_train.shape[1:], 
+        n_filters=best_trial.params['n_filters'], 
+        dense_units=best_trial.params['dense_units'], 
+        dropout_rate=best_trial.params['dropout_rate'], 
+        num_classes=num_classes,
+        model_type=model_type
+    )
+    best_model.compile(
+        optimizer=Adamax(learning_rate=best_trial.params['learning_rate']),
+        loss='binary_crossentropy' if num_classes == 1 else 'categorical_crossentropy',
+        metrics=['accuracy']
+    )
     best_model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=32, verbose=1)
-    best_model.save(f"/kaggle/working/best_model_{mode}.h5")
-    mlflow.log_artifact(f"/kaggle/working/best_model_{mode}.h5")
-    model_logger.info(f"Best model for {mode} saved successfully.")
+
+    # Save the best model
+    best_model_path = f"best_model_{mode}_{model_type}.h5"
+    best_model.save(best_model_path)
+    mlflow.log_artifact(best_model_path)
+    model_logger.info(f"Best model for {mode} ({model_type}) saved successfully.")
+
     return best_model
 
-def optimize_gru_model(trial):
-    """
-    Define the GRU model and its hyperparameter optimization using Optuna.
-    """
-    num_units = trial.suggest_int("num_units", 64, 256, step=32)
-    dropout_rate = trial.suggest_float("dropout_rate", 0.1, 0.5, step=0.1)
-    learning_rate = trial.suggest_loguniform("learning_rate", 1e-4, 1e-2)
-    
-    # Build the model
-    model = build_gru_model(
-        input_shape=X_train.shape[1:],  # Use global variables from main
-        num_classes=y_train.shape[1]
-    )
-    model.compile(
-        optimizer=Adamax(learning_rate=learning_rate),
-        loss="categorical_crossentropy",
-        metrics=["accuracy"]
-    )
-    
-    # Fit the model
-    history = model.fit(
-        X_train, y_train,
-        validation_data=(X_val, y_val),
-        epochs=10,
-        batch_size=32,
-        verbose=0
-    )
-    
-    # Return validation accuracy
-    val_accuracy = max(history.history["val_accuracy"])
-    return val_accuracy
 
-def optimize_gru_model(trial):
-    """
-    Define the GRU model and its hyperparameter optimization using Optuna.
-    """
-    num_units = trial.suggest_int("num_units", 64, 256, step=32)
-    dropout_rate = trial.suggest_float("dropout_rate", 0.1, 0.5, step=0.1)
-    learning_rate = trial.suggest_loguniform("learning_rate", 1e-4, 1e-2)
-    
-    # Build the model
-    model = build_gru_model(
-        input_shape=X_train.shape[1:],  # Use global variables from main
-        num_classes=y_train.shape[1]
-    )
-    model.compile(
-        optimizer=Adamax(learning_rate=learning_rate),
-        loss="categorical_crossentropy",
-        metrics=["accuracy"]
-    )
-    
-    # Fit the model
-    history = model.fit(
-        X_train, y_train,
-        validation_data=(X_val, y_val),
-        epochs=10,
-        batch_size=32,
-        verbose=0
-    )
-    
-    # Return validation accuracy
-    val_accuracy = max(history.history["val_accuracy"])
-    return val_accuracy
 
-def build_gru_model(input_shape, num_classes):
-    """
-    Build a GRU model with the specified architecture.
-
-    Args:
-        input_shape: Shape of the input data (e.g., (1, 52)).
-        num_classes: Number of output classes.
-
-    Returns:
-        Compiled GRU model.
-    """
-    # Input layer
-    input_layer = Input(shape=input_shape)
-
-    # First Convolutional Block
-    conv_block1 = Conv1D(256, kernel_size=5, strides=1, padding='same', activation='relu')(input_layer)
-    conv_block1 = MaxPooling1D(pool_size=2, strides=2, padding='same')(conv_block1)
-    conv_block1 = BatchNormalization()(conv_block1)
-
-    # Second Convolutional Block
-    conv_block2 = Conv1D(512, kernel_size=5, strides=1, padding='same', activation='relu')(conv_block1)
-    conv_block2 = MaxPooling1D(pool_size=2, strides=2, padding='same')(conv_block2)
-    conv_block2 = BatchNormalization()(conv_block2)
-
-    # GRU Branch 1
-    gru_branch1 = GRU(32, return_sequences=True, activation='tanh', go_backwards=True)(conv_block2)
-    gru_branch1 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(gru_branch1)
-
-    # GRU Branch 2
-    gru_branch2 = GRU(64, return_sequences=True, activation='tanh', go_backwards=True)(conv_block2)
-    gru_branch2 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(gru_branch2)
-
-    # GRU Branch 3
-    gru_branch3 = GRU(64, return_sequences=True, activation='tanh', go_backwards=True)(conv_block2)
-    gru_branch3 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(gru_branch3)
-
-    # Combine GRU Branches
-    combined_gru_branches = add([gru_branch1, gru_branch2, gru_branch3])
-
-    # Additional GRU Layers
-    additional_gru1 = GRU(128, return_sequences=True, activation='tanh', go_backwards=True)(combined_gru_branches)
-    additional_gru1 = GRU(32, return_sequences=False, activation='tanh', go_backwards=True)(additional_gru1)
-
-    # Fully Connected Layers
-    dense_block = Dense(64, activation=None)(additional_gru1)
-    dense_block = LeakyReLU()(dense_block)
-    dense_block = Dense(32, activation=None)(dense_block)
-    dense_block = LeakyReLU()(dense_block)
-
-    # Output Layer
-    output_layer = Dense(num_classes, activation="softmax")(dense_block)
-
-    # Build and Compile Model
-    gru_model = Model(inputs=input_layer, outputs=output_layer)
-    gru_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-    return gru_model
+def log_class_distribution(y, message):
+    """Log the class distribution."""
+    unique, counts = np.unique(np.argmax(y, axis=1), return_counts=True)
+    class_distribution = dict(zip(unique, counts))
+    processing_logger.info(f"{message} Class Distribution: {class_distribution}")
 
 def main():
+    mlflow.end_run() 
+    
     data_logger.info("Starting data pipeline.")
     df = load_data()
     audio_metadata = process_audio_metadata('/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files')
     df_all = merge_datasets(audio_metadata, df)
-    df_filtered = filter_and_sample_data(df_all)
 
+    # Define classification modes and feature types
+    classification_modes = ['binary', 'multi']  # Options: 'binary', 'multi'
+    feature_types = ['gru', 'mfcc', 'log_mel']  # Options: 
     models = []
-    modes = ['gru', 'mfcc', 'log_mel']  # Add 'gru' for multi-class, others for binary classification
-    for mode in modes:
-        global X_train, X_val, X_test, y_train, y_val, y_test
-        if mode == 'gru':
-            X, y, le = prepare_dataset_with_gru(df_filtered, '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files')
-        else:
-            X, y, le = prepare_dataset_parallel(df_filtered, '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files', mode=mode)
 
-        X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
-        X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, stratify=y_temp, random_state=42)
+    for classification_mode in classification_modes:
+        # Preprocess dataset for binary or multi-class classification
+        df_filtered = filter_and_sample_data(df_all, mode=classification_mode)
+        processing_logger.info(f"Dataset shape for {classification_mode} mode: {df_filtered.shape}")
+        
+        for feature_type in feature_types:
+            processing_logger.info(f"Running experiment for {classification_mode} classification with {feature_type} features.")
+            global X_train, X_val, X_test, y_train, y_val, y_test
 
-        # Check class distribution
-        unique_classes, class_counts = np.unique(np.argmax(y_train, axis=1), return_counts=True)
-        processing_logger.info(f"Classes in y_train: {unique_classes}, Counts: {class_counts}")
-        if len(unique_classes) <= 1:
-            raise ValueError(f"Insufficient class diversity in y_train for {mode} mode.")
+            # Prepare the dataset
+            if feature_type == 'gru':
+                X, y, le = prepare_dataset_with_gru(df_filtered, '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files')
+            else:
+                X, y, le = prepare_dataset_parallel(df_filtered, '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files', mode=feature_type)
 
-        # Apply oversampling only for multi-class tasks
-        if mode == 'gru':
+            # Split data into train/val/test
+            X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
+            X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, stratify=y_temp, random_state=42)
+
+            # Save test data for future evaluation
+            np.save(f"X_test_{classification_mode}_{feature_type}.npy", X_test)
+            np.save(f"y_test_{classification_mode}_{feature_type}.npy", y_test)
+            mlflow.log_artifact(f"X_test_{classification_mode}_{feature_type}.npy")
+            mlflow.log_artifact(f"y_test_{classification_mode}_{feature_type}.npy")
+
+            # Log dataset characteristics
+            log_class_distribution(y_train, "Before Oversampling")
+            processing_logger.info(f"Train size: {X_train.shape}, Validation size: {X_val.shape}, Test size: {X_test.shape}")
+
             try:
                 X_train, y_train = oversample_data(X_train, y_train)
             except ValueError as e:
                 processing_logger.warning(f"SMOTE skipped: {e}")
-        else:
-            processing_logger.info("Oversampling skipped for binary classification.")
+            log_class_distribution(y_train, "After Oversampling")
 
-        model_logger.info(f"Running experiment for {mode} features.")
-        with mlflow.start_run(run_name=f"Experiment_{mode}"):
-            if mode == 'gru':
-                # Expand dimensions for GRU input
-                X_train = np.expand_dims(X_train, axis=1)
-                X_val = np.expand_dims(X_val, axis=1)
-                X_test = np.expand_dims(X_test, axis=1)
-                
-                # Perform optimization with Optuna
-                study = optuna.create_study(direction="maximize")
-                study.optimize(optimize_gru_model, n_trials=20)
-                
-                # Log the best hyperparameters
-                best_params = study.best_params
-                model_logger.info(f"Best GRU Hyperparameters: {best_params}")
-                mlflow.log_params(best_params)
-                
-                # Build and save the best model
-                best_model = build_gru_model(
-                    input_shape=X_train.shape[1:],
-                    num_classes=y_train.shape[1]
-                )
-                best_model.compile(
-                    optimizer=Adamax(learning_rate=best_params["learning_rate"]),
-                    loss="categorical_crossentropy",
-                    metrics=["accuracy"]
-                )
-                best_model.fit(
-                    X_train, y_train,
-                    validation_data=(X_val, y_val),
-                    epochs=10,
-                    batch_size=32,
-                    verbose=1
-                )
-                
-                # Save the best model
-                checkpoint_path = f"/kaggle/working/best_gru_model_{mode}.keras"
-                best_model.save(checkpoint_path, save_format="keras")
-                mlflow.log_artifact(checkpoint_path)
-                models.append(best_model)
+            # Train and save model
+            with mlflow.start_run(run_name=f"Experiment_{classification_mode}_{feature_type}", nested=True):
+                if feature_type == 'gru':
+                    # Expand dimensions for 1D CNN input
+                    X_train = np.expand_dims(X_train, axis=-1)
+                    X_val = np.expand_dims(X_val, axis=-1)
+                    X_test = np.expand_dims(X_test, axis=-1)
 
-            else:
-                model = track_experiment_with_mlflow_and_optuna(mode)
+                    # Optimize and train 1D CNN
+                    model = track_experiment_with_mlflow_and_optuna(
+                        mode=feature_type,
+                        num_classes=y_train.shape[1],
+                        model_type='1D'  # Specify 1D CNN for GRU features
+                    )
+                else:
+                    # Optimize and train CNN models for MFCC and MEL
+                    model = track_experiment_with_mlflow_and_optuna(
+                        mode=feature_type,
+                        num_classes=y_train.shape[1],
+                        model_type='2D'  # Specify 2D CNN for MFCC and Log-Mel
+                    )
+
+                # Log evaluation metrics
+                evaluate_model(model, X_test, y_test, le, mode=feature_type)
+
+                # Save final model
+                final_model_path = f"final_model_{classification_mode}_{feature_type}.h5"
+                model.save(final_model_path)
+                mlflow.log_artifact(final_model_path)
                 models.append(model)
 
+    processing_logger.info("All experiments completed successfully!")
 
 if __name__ == "__main__":
     main()
+

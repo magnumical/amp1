@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/5f78f7df27a94cd0b893171d95d973a6/artifacts
+end_time: 1734844601379
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5f78f7df27a94cd0b893171d95d973a6
+run_name: placid-seal-553
+run_uuid: 5f78f7df27a94cd0b893171d95d973a6
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844595756
+status: 3
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/6f054a5275c34b709c90840b7304eb3e/artifacts
+end_time: 1734843155468
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 6f054a5275c34b709c90840b7304eb3e
+run_name: Experiment_binary_gru
+run_uuid: 6f054a5275c34b709c90840b7304eb3e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734842320203
+status: 3
+tags: []
+user_id: root

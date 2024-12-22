@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/a5e6964c077a447a8c680d9cbb7c438d/artifacts
+end_time: 1734843267100
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a5e6964c077a447a8c680d9cbb7c438d
+run_name: thundering-boar-520
+run_uuid: a5e6964c077a447a8c680d9cbb7c438d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734843258568
+status: 3
+tags: []
+user_id: root

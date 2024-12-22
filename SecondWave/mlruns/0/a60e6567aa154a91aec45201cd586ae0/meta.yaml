@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/a60e6567aa154a91aec45201cd586ae0/artifacts
+end_time: 1734843346592
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a60e6567aa154a91aec45201cd586ae0
+run_name: righteous-ray-781
+run_uuid: a60e6567aa154a91aec45201cd586ae0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734843341335
+status: 3
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/7cfe1244c3c74c9895740683ec1424ad/artifacts
+end_time: 1734844573741
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 7cfe1244c3c74c9895740683ec1424ad
+run_name: kindly-squid-232
+run_uuid: 7cfe1244c3c74c9895740683ec1424ad
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844568139
+status: 3
+tags: []
+user_id: root

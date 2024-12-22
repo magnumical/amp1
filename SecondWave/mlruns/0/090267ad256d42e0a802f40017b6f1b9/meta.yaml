@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/090267ad256d42e0a802f40017b6f1b9/artifacts
+end_time: 1734844701866
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 090267ad256d42e0a802f40017b6f1b9
+run_name: mercurial-ram-532
+run_uuid: 090267ad256d42e0a802f40017b6f1b9
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844696544
+status: 3
+tags: []
+user_id: root

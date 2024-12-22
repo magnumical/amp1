@@ -101,25 +101,26 @@ def mfccs_feature_extraction(audio_files_path, df_filtered, n_jobs=-1):
     return X_data, y_data
 
 
-def prepare_dataset_with_gru(df_filtered, audio_files_path):
-    """
-    Prepare the dataset using the GRU pipeline.
-
-    Args:
-        df_filtered: Filtered DataFrame containing patient diagnosis and metadata.
-        audio_files_path: Path to the directory containing audio files.
-
-    Returns:
-        X: Feature data.
-        y: Encoded labels.
-        le: Label encoder.
-    """
+def prepare_dataset_augmented(df_filtered, audio_files_path):
+    """Prepare the dataset using the GRU pipeline."""
     processing_logger.info("Preparing dataset with GRU pipeline.")
+    
+    # Extract features and labels
     X, y = mfccs_feature_extraction(audio_files_path, df_filtered)
+    
+    # Apply label encoding
     le = LabelEncoder()
-    y = to_categorical(le.fit_transform(np.array(y)))
+    y_encoded = le.fit_transform(np.array(y))  # Encode labels to integers
+    y_one_hot = to_categorical(y_encoded)      # Convert to one-hot encoding
+    
+    # Log the mapping of one-hot encoding to class labels
+    print("One-hot encoding mapping:")
+    for idx, label in enumerate(le.classes_):
+        print(f"{idx} -> {label}")
+    
     processing_logger.info("Dataset preparation with GRU pipeline complete.")
-    return X, y, le
+    return X, y_one_hot, le
+
 
 
 def process_audio_metadata(folder_path):
@@ -160,30 +161,64 @@ def merge_datasets(df1, df2):
 
 def filter_and_sample_data(df, mode='binary'):
     """
-    Filter and sample the dataset.
-    
+    Filter and sample the dataset for binary or multi-class classification.
+
     Args:
         df: Input DataFrame containing diagnosis data.
-        mode: Specify 'binary' for Normal/Abnormal or 'multiclass' for original labels.
-        
+        mode: Specify 'binary' for Normal/Abnormal or 'multi-class' for grouped classes.
+
     Returns:
         Filtered and processed DataFrame.
     """
-    processing_logger.info("Filtering and sampling the dataset.")
+    processing_logger.info(f"Filtering and sampling the dataset for {mode} classification.")
+    
     if mode == 'binary':
-        df['Diagnosis'] = df['Diagnosis'].apply(lambda x: 'Abnormal' if x != 'Healthy' else 'Normal')
-    # Else, keep original multiclass labels
-    df = df.sort_values('Patient number').reset_index(drop=True)
+        # Binary classification: Normal vs. Abnormal
+        df['Diagnosis'] = df['Diagnosis'].apply(lambda x: 'Normal' if x == 'Healthy' else 'Abnormal')
+    elif mode == 'multi':
+        # Multi-class classification: Group classes
+        processing_logger.info("Grouping classes for multi-class classification.")
+        df['Diagnosis'] = df['Diagnosis'].replace({
+            'Healthy': 'Normal',
+            'COPD': 'Chronic Respiratory Diseases',
+            'Asthma': 'Chronic Respiratory Diseases',
+            'URTI': 'Respiratory Infections',
+            'Bronchiolitis': 'Respiratory Infections',
+            'LRTI': 'Respiratory Infections',
+            'Pneumonia': 'Respiratory Infections',
+            'Bronchiectasis': 'Respiratory Infections'
+        })
+
+    # Filter out rare classes with fewer than 5 samples
+    class_counts = df['Diagnosis'].value_counts()
+    valid_classes = class_counts[class_counts >= 5].index
+    df = df[df['Diagnosis'].isin(valid_classes)].reset_index(drop=True)
+
+    processing_logger.info(f"Filtered classes: {df['Diagnosis'].unique()}")
     processing_logger.info(f"Filtering and sampling complete with mode={mode}.")
     return df
 
+from imblearn.over_sampling import SMOTE
+from tensorflow.keras.utils import to_categorical
+import numpy as np
 
-def oversample_data(X, y):
-    """Apply SMOTE to balance classes."""
+def oversample_data(X, y, random_state=42, k_neighbors=5):
+    """
+    Apply SMOTE to balance classes for both binary and multi-class cases.
+    
+    Args:
+        X: Feature data.
+        y: One-hot encoded labels.
+        random_state: Random seed for reproducibility.
+        k_neighbors: Number of nearest neighbors for SMOTE.
+    
+    Returns:
+        Oversampled feature data and labels.
+    """
     processing_logger.info("Applying SMOTE to balance classes.")
     
     # Save the original shape of features
-    original_shape = X.shape[1:]  
+    original_shape = X.shape[1:]
     
     # Flatten for SMOTE processing
     X = X.reshape((X.shape[0], -1))
@@ -191,18 +226,31 @@ def oversample_data(X, y):
     # Convert one-hot encoded labels to integers
     y = np.argmax(y, axis=1)
     
-    # Apply SMOTE
-    smote = SMOTE(random_state=42)
-    X_resampled, y_resampled = smote.fit_resample(X, y)
+    # Log original class distribution
+    unique_classes, class_counts = np.unique(y, return_counts=True)
+    processing_logger.info(f"Original class distribution: {dict(zip(unique_classes, class_counts))}")
     
-    # Reshape back to the original dimensions
-    X_resampled = X_resampled.reshape((-1, *original_shape))
-    
-    # Convert labels back to one-hot encoding
-    y_resampled = to_categorical(y_resampled)
-    
-    processing_logger.info("SMOTE oversampling complete.")
-    return X_resampled, y_resampled
+    try:
+        # Apply SMOTE
+        smote = SMOTE(random_state=random_state, k_neighbors=k_neighbors)
+        X_resampled, y_resampled = smote.fit_resample(X, y)
+        
+        # Log new class distribution
+        unique_classes, class_counts = np.unique(y_resampled, return_counts=True)
+        processing_logger.info(f"New class distribution after SMOTE: {dict(zip(unique_classes, class_counts))}")
+        
+        # Reshape back to the original dimensions
+        X_resampled = X_resampled.reshape((-1, *original_shape))
+        
+        # Convert labels back to one-hot encoding
+        y_resampled = to_categorical(y_resampled)
+        
+        processing_logger.info("SMOTE oversampling complete.")
+        return X_resampled, y_resampled
+    except ValueError as e:
+        processing_logger.warning(f"SMOTE could not be applied: {e}")
+        return X, to_categorical(y)  # Return original data if SMOTE fails
+
 
 
 
@@ -219,12 +267,6 @@ def augment_data(X, y):
     processing_logger.info("Data augmentation setup complete.")
     return datagen
 
-def preprocess_file(row, audio_files_path, mode):
-    """Preprocess a single audio file."""
-    file_path = os.path.join(audio_files_path, row['audio_file_name'])
-    feature = preprocessing(file_path, mode)
-    label = row['Diagnosis']
-    return feature, label
 
 def prepare_dataset_parallel(df, audio_files_path, mode):
     """Prepare the dataset by extracting features from audio files in parallel."""
@@ -241,6 +283,13 @@ def prepare_dataset_parallel(df, audio_files_path, mode):
     processing_logger.info(f"Dataset preparation using {mode} complete.")
     return X, y, le
 
+def preprocess_file(row, audio_files_path, mode):
+    """Preprocess a single audio file."""
+    file_path = os.path.join(audio_files_path, row['audio_file_name'])
+    feature = preprocessing(file_path, mode)
+    label = row['Diagnosis']
+    return feature, label
+    
 def preprocessing(audio_file, mode):
     """Preprocess audio file by resampling, padding/truncating, and extracting features."""
     sr_new = 16000  # Resample audio to 16 kHz

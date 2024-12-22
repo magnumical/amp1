@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/66cd19a2ab9943eeb8623adabfbd870f/artifacts
+end_time: 1734843188073
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 66cd19a2ab9943eeb8623adabfbd870f
+run_name: masked-koi-876
+run_uuid: 66cd19a2ab9943eeb8623adabfbd870f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734843181897
+status: 3
+tags: []
+user_id: root

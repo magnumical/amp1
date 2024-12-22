@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/3b43cbe0addc4a22976420ac08b5c38c/artifacts
+end_time: 1734844772297
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3b43cbe0addc4a22976420ac08b5c38c
+run_name: blushing-wasp-770
+run_uuid: 3b43cbe0addc4a22976420ac08b5c38c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844767012
+status: 3
+tags: []
+user_id: root

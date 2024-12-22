@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/808827f62d1347ea94fd87297ae2147c/artifacts
+end_time: 1734844788587
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 808827f62d1347ea94fd87297ae2147c
+run_name: inquisitive-fish-839
+run_uuid: 808827f62d1347ea94fd87297ae2147c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844783126
+status: 3
+tags: []
+user_id: root

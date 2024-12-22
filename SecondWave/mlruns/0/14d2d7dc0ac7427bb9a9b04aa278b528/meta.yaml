@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/14d2d7dc0ac7427bb9a9b04aa278b528/artifacts
+end_time: 1734844590196
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 14d2d7dc0ac7427bb9a9b04aa278b528
+run_name: intrigued-seal-774
+run_uuid: 14d2d7dc0ac7427bb9a9b04aa278b528
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734844584852
+status: 3
+tags: []
+user_id: root

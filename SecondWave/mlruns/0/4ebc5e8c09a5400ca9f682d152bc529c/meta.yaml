@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/4ebc5e8c09a5400ca9f682d152bc529c/artifacts
+end_time: 1734843283353
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4ebc5e8c09a5400ca9f682d152bc529c
+run_name: bouncy-mole-208
+run_uuid: 4ebc5e8c09a5400ca9f682d152bc529c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734843277914
+status: 3
+tags: []
+user_id: root
