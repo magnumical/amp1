@@ -166,7 +166,7 @@ def pitch_shift (data , rate):
     data = librosa.effects.pitch_shift(data, sr=220250, n_steps=rate)
     return data
 
-def prepare_dataset_with_gru(df_filtered, audio_files_path):
+def prepare_dataset_augmented(df_filtered, audio_files_path):
     """Prepare the dataset using the GRU pipeline."""
     processing_logger.info("Preparing dataset with GRU pipeline.")
     
@@ -591,7 +591,7 @@ def main():
 
     # Define classification modes and feature types
     classification_modes = ['binary', 'multi']  # Options: 'binary', 'multi'
-    feature_types = ['gru', 'mfcc', 'log_mel']  # Options: 
+    feature_types = ['augmented', 'mfcc', 'log_mel']  # Options: 
     models = []
 
     for classification_mode in classification_modes:
@@ -604,8 +604,8 @@ def main():
             global X_train, X_val, X_test, y_train, y_val, y_test
 
             # Prepare the dataset
-            if feature_type == 'gru':
-                X, y, le = prepare_dataset_with_gru(df_filtered, '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files')
+            if feature_type == 'augmented':
+                X, y, le = prepare_dataset_augmented(df_filtered, '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files')
             else:
                 X, y, le = prepare_dataset_parallel(df_filtered, '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files', mode=feature_type)
 
@@ -631,7 +631,7 @@ def main():
 
             # Train and save model
             with mlflow.start_run(run_name=f"Experiment_{classification_mode}_{feature_type}", nested=True):
-                if feature_type == 'gru':
+                if feature_type == 'augmented':
                     # Expand dimensions for 1D CNN input
                     X_train = np.expand_dims(X_train, axis=-1)
                     X_val = np.expand_dims(X_val, axis=-1)
