@@ -30,7 +30,7 @@ jobs:
           pip install -r requirements.txt
 
       # Run unit tests
-      - name: Run Tests
+      - name: Run TrainMmodel
         run: |
           pytest --maxfail=5 --disable-warnings -v
 
