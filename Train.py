@@ -199,7 +199,7 @@ def main():
 
             # Train and save the model
             best_model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=32)
-            model_path = f"./best_model_{classification_mode}_{feature_type}.h5"
+            model_path = f".models/best_model_{classification_mode}_{feature_type}.h5"
             best_model.save(model_path)
             mlflow.log_artifact(model_path)
 
