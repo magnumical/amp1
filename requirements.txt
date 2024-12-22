@@ -1,0 +1,17 @@
+imbalanced_learn==0.13.0
+joblib==1.4.2
+keras==3.6.0
+librosa==0.10.2.post1
+matplotlib==3.8.4
+mlflow==2.19.0
+mlflow_skinny==2.19.0
+numpy==1.24.3
+optuna==4.1.0
+pandas==2.0.3
+scikit_learn==1.4.2
+scipy==1.5.2
+seaborn==0.13.2
+streamlit==1.32.0
+tensorflow==2.17.0
+tensorflow_intel==2.17.0
+tqdm==4.66.4
