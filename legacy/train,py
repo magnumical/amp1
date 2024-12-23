@@ -46,6 +46,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score,precision_score,recall_score,f1_score,matthews_corrcoef
 from sklearn.metrics import cohen_kappa_score,roc_auc_score,confusion_matrix,classification_report
 
+from scipy.signal import butter, sosfilt
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -90,6 +91,9 @@ def process_audio_file(soundDir, audio_files_path, df_filtered):
 
     # Load audio file
     data_x, sampling_rate = librosa.load(os.path.join(audio_files_path, soundDir), sr=None)
+    data_x = preprocess_audio(data_x, sampling_rate)  # Apply filtering
+
+    
     mfccs = np.mean(librosa.feature.mfcc(y=data_x, sr=sampling_rate, n_mfcc=features).T, axis=0)
     X_local.append(mfccs)
     y_local.append(disease)
@@ -129,7 +133,7 @@ def mfccs_feature_exteraction(audio_files_path, df_filtered, n_jobs=-1):
     processing_logger.info(f"Processing audio files in: {audio_files_path}")
     files = [file for file in os.listdir(audio_files_path) if file.endswith('.wav') and file[:3] not in ['103', '108', '115']]
    
-    files = files[:30] ## DEBUG
+    #files = files[:30] ## DEBUG
 
     # Use Parallel and delayed to process files in parallel
     results = Parallel(n_jobs=n_jobs, backend="loky")(delayed(process_audio_file)(file, audio_files_path, df_filtered) for file in tqdm(files, desc="Processing audio files"))
@@ -165,6 +169,37 @@ def stretch(data, rate):
 def pitch_shift (data , rate):
     data = librosa.effects.pitch_shift(data, sr=220250, n_steps=rate)
     return data
+
+
+def preprocess_audio(audio, sr):
+    """
+    Apply a bandpass filter to audio data.
+    
+    Args:
+        audio: The input audio signal.
+        sr: The sampling rate of the audio.
+        
+    Returns:
+        Filtered audio signal.
+    """
+    # Define cutoff frequencies
+    low_cutoff = 50  # 50 Hz
+    high_cutoff = min(5000, sr / 2 - 1)  # Ensure it is below Nyquist frequency
+
+    if low_cutoff >= high_cutoff:
+        raise ValueError(
+            f"Invalid filter range: low_cutoff={low_cutoff}, high_cutoff={high_cutoff} for sampling rate {sr}"
+        )
+
+    # Design a bandpass filter
+    sos = butter(N=10, Wn=[low_cutoff, high_cutoff], btype='band', fs=sr, output='sos')
+
+    # Apply the filter
+    filtered_audio = sosfilt(sos, audio)
+    return filtered_audio
+
+
+
 
 def prepare_dataset_augmented(df_filtered, audio_files_path):
     """Prepare the dataset using the GRU pipeline."""
@@ -322,7 +357,7 @@ def preprocessing(audio_file, mode):
     """Preprocess audio file by resampling, padding/truncating, and extracting features."""
     sr_new = 16000  # Resample audio to 16 kHz
     x, sr = librosa.load(audio_file, sr=sr_new)
-
+    x = preprocess_audio(x, sr)
     # Padding or truncating to 5 seconds (5 * sr_new samples)
     max_len = 5 * sr_new
     if x.shape[0] < max_len:
@@ -422,14 +457,13 @@ def build_model(input_shape, n_filters, dense_units, dropout_rate, num_classes, 
     model.add(Dense(dense_units, activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(dropout_rate))
-    model.add(Dense(num_classes, activation='sigmoid' if num_classes == 1 else 'softmax'))
+    # Final output layer with softmax for one-hot encoded outputs
+    model.add(Dense(num_classes, activation='softmax'))
 
-    # Compile the model
-    loss = 'binary_crossentropy' if num_classes == 1 else 'categorical_crossentropy'
-    model.compile(optimizer='adam', loss=loss, metrics=['accuracy'])
+    # Compile the model with categorical crossentropy
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     print(f"{model_type} CNN model built and compiled successfully.")
     return model
-
 
 
 def log_metrics(y_true, y_pred, mode):
@@ -581,6 +615,8 @@ def log_class_distribution(y, message):
     class_distribution = dict(zip(unique, counts))
     processing_logger.info(f"{message} Class Distribution: {class_distribution}")
 
+
+
 def main():
     mlflow.end_run() 
     
@@ -590,7 +626,7 @@ def main():
     df_all = merge_datasets(audio_metadata, df)
 
     # Define classification modes and feature types
-    classification_modes = ['binary', 'multi']  # Options: 'binary', 'multi'
+    classification_modes = ['multi', 'binary']  # Options: 'binary', 'multi'
     feature_types = ['augmented', 'mfcc', 'log_mel']  # Options: 
     models = []
 
@@ -652,7 +688,7 @@ def main():
                     )
 
                 # Log evaluation metrics
-                evaluate_model(model, X_test, y_test, le, mode=feature_type)
+                #evaluate_model(model, X_test, y_test, le, mode=feature_type)
 
                 # Save final model
                 final_model_path = f"final_model_{classification_mode}_{feature_type}.h5"

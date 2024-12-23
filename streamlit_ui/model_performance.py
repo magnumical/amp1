@@ -72,6 +72,18 @@ def evaluate_models():
 def run():
     st.header("Model Performance")
 
+    st.subheader("Model Training Scheme")
+    st.write(""" Below is the illusteration of the model training and evaluation framework. The framework includes the following steps:
+    """)
+
+    st.image("./streamlit_ui/img/training.png", caption="Model Training and Evaluation Framework")
+
+    st.subheader("Types of Models and Input Features")
+    st.write("""The workflow supports six distinct models, combining two classification settings (binary and multi-class) with three feature extraction modes (MFCC, Log-Mel Spectrogram, and Augmented Features). 
+    Binary classification models distinguish between Normal and Abnormal, while multi-class models categorize audio into broader conditions like Normal, Chronic Respiratory Diseases, and Respiratory Infections.
+    MFCC and Log-Mel features require 2D CNN architectures due to their structured, matrix-like representations, whereas augmented features leverage 1D CNNs to handle diverse feature sets. 
+    """)
+
     # Check if the summary file exists
     if os.path.exists(SUMMARY_FILE):
         st.info("Loading precomputed metrics from summary file.")

@@ -4,6 +4,7 @@ import numpy as np
 import librosa
 from sklearn.preprocessing import normalize
 from tensorflow.keras.models import load_model
+from scipy.signal import butter, sosfilt
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -29,6 +30,7 @@ CLASS_NAMES = {
     "multi": ["Chronic Respiratory Diseases", "Normal", "Respiratory Infections"]
 }
 
+
 # Augmentation Functions
 def add_noise(data, noise_factor=0.001):
     noise = np.random.randn(len(data))
@@ -42,6 +44,36 @@ def stretch(data, rate=1.2):
 
 def pitch_shift(data, sr, n_steps=3):
     return librosa.effects.pitch_shift(data, sr=sr, n_steps=n_steps)
+
+
+
+def filtering(audio, sr):
+    """
+    Apply a bandpass filter to audio data.
+    
+    Args:
+        audio: The input audio signal.
+        sr: The sampling rate of the audio.
+        
+    Returns:
+        Filtered audio signal.
+    """
+    # Define cutoff frequencies
+    low_cutoff = 50  # 50 Hz
+    high_cutoff = min(5000, sr / 2 - 1)  # Ensure it is below Nyquist frequency
+
+    if low_cutoff >= high_cutoff:
+        raise ValueError(
+            f"Invalid filter range: low_cutoff={low_cutoff}, high_cutoff={high_cutoff} for sampling rate {sr}"
+        )
+
+    # Design a bandpass filter
+    sos = butter(N=10, Wn=[low_cutoff, high_cutoff], btype='band', fs=sr, output='sos')
+
+    # Apply the filter
+    filtered_audio = sosfilt(sos, audio)
+    return filtered_audio
+
 
 def preprocess_audio(audio_file, mode="augmented", input_shape=None):
     """
@@ -59,6 +91,7 @@ def preprocess_audio(audio_file, mode="augmented", input_shape=None):
     try:
         sr_new = 16000  # Resample audio to 16 kHz
         x, sr = librosa.load(audio_file, sr=sr_new)
+        x = filtering(x, sr)
         logger.info(f"Loaded audio file '{audio_file}' with shape {x.shape} and sampling rate {sr}.")
 
         max_len = 5 * sr_new

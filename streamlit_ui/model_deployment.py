@@ -6,7 +6,11 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import normalize
 from tensorflow.keras.models import load_model
 import logging
+from prometheus_client import Counter, Histogram, start_http_server
+import time
+from scipy.signal import butter, sosfilt
 
+ 
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -32,7 +36,41 @@ CLASS_NAMES = {
     "multi": ["Chronic Respiratory Diseases", "Normal", "Respiratory Infections"]
 }
 
+# Define Prometheus metrics
+REQUEST_COUNT = Counter('audio_classifier_requests_total', 'Total number of requests to the classifier')
+RESPONSE_TIME = Histogram('audio_classifier_response_time_seconds', 'Time taken to process requests')
+ERROR_COUNT = Counter('audio_classifier_errors_total', 'Total number of errors during classification')
 
+# Start Prometheus HTTP server
+start_http_server(9100)  # Expose metrics at http://localhost:9100/metrics
+
+
+def filtering(audio, sr):
+    """
+    Apply a bandpass filter to audio data.
+    
+    Args:
+        audio: The input audio signal.
+        sr: The sampling rate of the audio.
+        
+    Returns:
+        Filtered audio signal.
+    """
+    # Define cutoff frequencies
+    low_cutoff = 50  # 50 Hz
+    high_cutoff = min(5000, sr / 2 - 1)  # Ensure it is below Nyquist frequency
+
+    if low_cutoff >= high_cutoff:
+        raise ValueError(
+            f"Invalid filter range: low_cutoff={low_cutoff}, high_cutoff={high_cutoff} for sampling rate {sr}"
+        )
+
+    # Design a bandpass filter
+    sos = butter(N=10, Wn=[low_cutoff, high_cutoff], btype='band', fs=sr, output='sos')
+
+    # Apply the filter
+    filtered_audio = sosfilt(sos, audio)
+    return filtered_audio
 
 ## Augmentation Functions
 def add_noise(data, noise_factor=0.001):
@@ -64,6 +102,8 @@ def preprocess_audio(audio_file, mode="augmented", input_shape=None):
     try:
         sr_new = 16000  # Resample audio to 16 kHz
         x, sr = librosa.load(audio_file, sr=sr_new)
+        x = filtering(x, sr)
+
         logger.info(f"Loaded audio file '{audio_file}' with shape {x.shape} and sampling rate {sr}.")
 
         max_len = 5 * sr_new
@@ -180,46 +220,116 @@ def classify_audio(model_type, feature_type, file_path):
     return predicted_class, probabilities
 
 
-# Streamlit App Function
+def classify_audio_with_metrics(model_type, feature_type, file_path):
+    """
+    Wrapper around classify_audio to include Prometheus metrics.
+    """
+    REQUEST_COUNT.inc()  # Increment request counter
+    start_time = time.time()
+    try:
+        # Call the original classify_audio function
+        result = classify_audio(model_type, feature_type, file_path)
+        return result
+    except Exception as e:
+        ERROR_COUNT.inc()  # Increment error counter
+        raise
+    finally:
+        RESPONSE_TIME.observe(time.time() - start_time)  # Observe response time
+
+
+# Tabs for Model Deployment
 def run():
     st.header("Respiratory Sound Classifier")
 
-    # User input: Model type and feature extraction mode
-    model_type = st.selectbox("Select Model Type", ["binary", "multi"], help="Choose between binary or multi-class classification.")
-    feature_type = st.selectbox("Select Feature Type", ["mfcc", "log_mel", "augmented"], help="Choose the feature extraction type.")
+    # Tabs for two modes
+    tab1, tab2 = st.tabs(["Flexible Mode", "Quick Multiclass (Augmented) Mode"])
 
-    # User input: Upload audio file
-    uploaded_file = st.file_uploader("Upload an Audio File", type=["wav", "mp3"], help="Supported formats: WAV, MP3")
+    # Tab 1: Flexible Mode
+    with tab1:
+        st.subheader("Flexible Mode")
+        st.write("Select model type and feature type for audio classification.")
+        model_type = st.selectbox(
+            "Select Model Type",
+            ["binary", "multi"],
+            help="Choose between binary or multi-class classification.",
+        )
+        feature_type = st.selectbox(
+            "Select Feature Type",
+            ["mfcc", "log_mel", "augmented"],
+            help="Choose the feature extraction type.",
+        )
+        uploaded_file = st.file_uploader(
+            "Upload an Audio File",
+            type=["wav", "mp3"],
+            help="Supported formats: WAV, MP3",
+        )
 
-    if uploaded_file is not None:
-        # Save the uploaded file temporarily
-        temp_file_path = os.path.join("temp_audio", uploaded_file.name)
-        os.makedirs("temp_audio", exist_ok=True)
-        with open(temp_file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+        if uploaded_file is not None:
+            temp_file_path = save_uploaded_file(uploaded_file)
+            st.audio(temp_file_path, format="audio/wav", start_time=0)
 
-        st.audio(temp_file_path, format="audio/wav", start_time=0)
+            try:
+                with st.spinner("Classifying the audio file, please wait..."):
+                    predicted_class, probabilities = classify_audio_with_metrics(
+                        model_type, feature_type, temp_file_path
+                    )
+
+                # Display results
+                display_results(predicted_class, probabilities, model_type)
+
+            except Exception as e:
+                st.error(f"Error: {e}")
+            finally:
+                os.remove(temp_file_path)
+
+    # Tab 2: Quick Multiclass (Augmented) Mode
+    with tab2:
+        st.subheader("Quick Multiclass (Augmented) Mode")
+        st.write("This mode automatically uses the multiclass model with augmented features.")
+        uploaded_file = st.file_uploader(
+            "Upload an Audio File for Multiclass Classification",
+            type=["wav", "mp3"],
+            help="Supported formats: WAV, MP3",
+        )
+
+        if uploaded_file is not None:
+            temp_file_path = save_uploaded_file(uploaded_file)
+            st.audio(temp_file_path, format="audio/wav", start_time=0)
+
+            try:
+                with st.spinner("Classifying the audio file, please wait..."):
+                    predicted_class, probabilities = classify_audio_with_metrics(
+                        model_type="multi", feature_type="augmented", file_path=temp_file_path
+                    )
+
+                # Display results
+                display_results(predicted_class, probabilities, "multi")
+
+            except Exception as e:
+                st.error(f"Error: {e}")
+            finally:
+                os.remove(temp_file_path)
 
 
-        try:
-            # Perform classification
-            with st.spinner("Classifying the audio file, please wait..."):
-                predicted_class, probabilities = classify_audio(model_type, feature_type, temp_file_path)
+def save_uploaded_file(uploaded_file):
+    """Save the uploaded file temporarily."""
+    temp_file_path = os.path.join("temp_audio", uploaded_file.name)
+    os.makedirs("temp_audio", exist_ok=True)
+    with open(temp_file_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    return temp_file_path
 
-            # Map class index to label
-            class_label = CLASS_NAMES[model_type][predicted_class]
 
-            # Display results
-            st.success("Classification Complete!")
-            st.write(f"Predicted Class: {class_label} (Index: {predicted_class})")
-            st.write("Prediction Probabilities:")
-            st.json({CLASS_NAMES[model_type][i]: prob for i, prob in enumerate(probabilities)})
+def display_results(predicted_class, probabilities, model_type):
+    """Display the classification results."""
+    class_label = CLASS_NAMES[model_type][predicted_class]
+    st.success(f"Classification Complete! Predicted Class: **{class_label}**")
+    st.write("### Prediction Probabilities")
+    class_probabilities = {
+        CLASS_NAMES[model_type][i]: prob for i, prob in enumerate(probabilities)
+    }
+    st.bar_chart(class_probabilities)
 
-        except Exception as e:
-            st.error(f"Error: {e}")
-
-        # Clean up the temporary file
-        os.remove(temp_file_path)
 
 if __name__ == "__main__":
     run()

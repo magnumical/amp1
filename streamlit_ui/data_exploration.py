@@ -122,14 +122,55 @@ def run():
                 y_raw, sr = librosa.load(file_path)
                 st.audio(file_path, format="audio/wav")
 
-                # Display Raw Waveform
+                # Raw Waveform
+                st.subheader("Raw Waveform")
                 fig, ax = plt.subplots(figsize=(10, 4))
                 librosa.display.waveshow(y_raw, sr=sr, ax=ax)
                 ax.set_title("Raw Waveform", fontsize=16, fontweight='bold')
                 st.pyplot(fig)
 
+                # Noise Filtering
+                st.subheader("Noise Filtering")
+                y_filtered = librosa.effects.preemphasis(y_raw)
+                fig, ax = plt.subplots(figsize=(10, 4))
+                librosa.display.waveshow(y_filtered, sr=sr, ax=ax)
+                ax.set_title("Filtered Waveform (Pre-emphasis Applied)", fontsize=16, fontweight='bold')
+                st.pyplot(fig)
+
+                # Log Mel-Spectrogram
+                st.subheader("Log Mel-Spectrogram")
+                mel_spect = librosa.feature.melspectrogram(y=y_filtered, sr=sr, n_mels=128)
+                mel_spect_db = librosa.power_to_db(mel_spect, ref=np.max)
+                fig, ax = plt.subplots(figsize=(10, 6))
+                img = librosa.display.specshow(mel_spect_db, sr=sr, x_axis='time', y_axis='mel', ax=ax, cmap='viridis')
+                fig.colorbar(img, ax=ax, format="%+2.0f dB")
+                ax.set_title("Log Mel-Spectrogram", fontsize=16, fontweight='bold')
+                st.pyplot(fig)
+
+                # Fast Fourier Transform (FFT)
+                st.subheader("FFT (Frequency Domain)")
+                fft_vals = np.abs(np.fft.fft(y_filtered))
+                freqs = np.fft.fftfreq(len(fft_vals), 1 / sr)
+                fig, ax = plt.subplots(figsize=(10, 4))
+                ax.plot(freqs[:len(freqs) // 2], fft_vals[:len(fft_vals) // 2], color='blue')
+                ax.set_title("FFT - Frequency Spectrum", fontsize=16, fontweight='bold')
+                ax.set_xlabel("Frequency (Hz)")
+                ax.set_ylabel("Amplitude")
+                st.pyplot(fig)
+
+                # Zero Crossing Rate
+                st.subheader("Zero Crossing Rate")
+                zcr = librosa.feature.zero_crossing_rate(y_filtered)[0]
+                fig, ax = plt.subplots(figsize=(10, 4))
+                ax.plot(zcr, color='orange')
+                ax.set_title("Zero Crossing Rate Over Time", fontsize=16, fontweight='bold')
+                ax.set_xlabel("Frame Index")
+                ax.set_ylabel("Zero Crossing Rate")
+                st.pyplot(fig)
+
             except Exception as e:
-                st.error(f"Error loading audio file: {e}")
+                st.error(f"Error processing audio file: {e}")
 
         else:
             st.warning("No audio files found in the directory.")
+
