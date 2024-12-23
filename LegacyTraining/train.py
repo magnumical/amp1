@@ -31,11 +31,7 @@ data_logger = logging.getLogger("data_loading")
 processing_logger = logging.getLogger("data_processing")
 model_logger = logging.getLogger("model_training")
 
-######################
-#                    #
-# utility functions  #
-#                    #
-######################
+
 def load_data(diagnosis_path='/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/patient_diagnosis.csv',
               demographic_path='/kaggle/input/respiratory-sound-database/demographic_info.txt'):
     """Load patient diagnosis and demographic data."""
@@ -125,7 +121,7 @@ def prepare_dataset_augmented(df_filtered, audio_files_path, classification_mode
     processing_logger.info("Preparing dataset with AUGMENTED pipeline.")
     
     # Extract features and labels
-    X, y = mfccs_feature_exteraction(audio_files_path, df_filtered)
+    X, y = mfccs_feature_extraction(audio_files_path, df_filtered)
     
     # Apply label encoding
     le = LabelEncoder()
@@ -149,7 +145,7 @@ def prepare_dataset_augmented(df_filtered, audio_files_path, classification_mode
     return X, y_processed, le
 
 
-def mfccs_feature_exteraction(audio_files_path, df_filtered, n_jobs=-1):
+def mfccs_feature_extraction(audio_files_path, df_filtered, n_jobs=-1):
     """
     Make the process of MFCC feature extraction faster by running jobs in-parallel
     

@@ -10,7 +10,7 @@ if "active_page" not in st.session_state:
     st.session_state["active_page"] = "Introduction"
 
 # Streamlit app setup
-st.title("ICBHI 2017 Challenge - Amplifier Health")
+st.title("ICBHI 2017 Challenge - Amplifier Health Take-home Assignment")
 
 # Sidebar Navigation
 st.sidebar.markdown('<div class="sidebar-header">Navigate</div>', unsafe_allow_html=True)

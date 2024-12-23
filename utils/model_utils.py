@@ -6,10 +6,12 @@ from keras.optimizers import Adamax
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 import optuna
-
+import mlflow
+import mlflow.keras
 from imblearn.over_sampling import RandomOverSampler
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from imblearn.over_sampling import SMOTE
+import matplotlib.pyplot as plt
 
 
 
@@ -30,6 +32,8 @@ from keras.layers import (
     GlobalAveragePooling1D, GlobalAveragePooling2D,
     Dense, Dropout, BatchNormalization
 )
+from sklearn.model_selection import train_test_split
+import numpy as np
 
  
 # Initialize logger
@@ -40,24 +44,16 @@ model_logger = logging.getLogger("model_utils")
 #  MODEL BUILDING UTILITIES
 # ==========================
 
-def build_cnn_model(input_shape, n_filters=32, dense_units=128, dropout_rate=0.3, num_classes=2, model_type='1D'):
+def build_model(input_shape, n_filters, dense_units, dropout_rate, num_classes, model_type='1D', classification_mode='binary'):
     """
-    Build and compile a CNN model.
+    Build and compile a CNN model for 1D or 2D data.
 
-    Args:
-        input_shape: Shape of the input data.
-        n_filters: Number of filters for the convolutional layers.
-        dense_units: Number of units in the dense layer.
-        dropout_rate: Dropout rate for regularization.
-        num_classes: Number of output classes.
-        model_type: '1D' for 1D CNN, '2D' for 2D CNN.
-
-    Returns:
-        Compiled CNN model.
+    Returns CNN model.
     """
-    model_logger.info(f"Building a {model_type} CNN model with input shape {input_shape}.")
+    print(f"Building the updated {model_type} CNN model with {classification_mode} classification.")
     model = Sequential()
 
+    # Add convolutional layers based on the model type
     if model_type == '1D':
         # 1D CNN layers
         model.add(Conv1D(n_filters, kernel_size=3, activation='relu', input_shape=input_shape))
@@ -97,126 +93,150 @@ def build_cnn_model(input_shape, n_filters=32, dense_units=128, dropout_rate=0.3
     else:
         raise ValueError("Invalid model_type. Must be '1D' or '2D'.")
 
-    # Fully connected layers
+    # Add fully connected layers
     model.add(Dense(dense_units, activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(dropout_rate))
-    model.add(Dense(num_classes, activation='sigmoid' if num_classes == 1 else 'softmax'))
+
+    # Add output layer dynamically based on classification mode
+    if classification_mode == 'binary':
+        # Binary classification: Single unit with sigmoid activation
+        model.add(Dense(1, activation='sigmoid'))
+        loss_function = 'binary_crossentropy'
+    else:
+        # Multi-class classification: num_classes units with softmax activation
+        model.add(Dense(num_classes, activation='softmax'))
+        loss_function = 'categorical_crossentropy'
 
     # Compile the model
-    loss = 'binary_crossentropy' if num_classes == 1 else 'categorical_crossentropy'
-    model.compile(optimizer='adam', loss=loss, metrics=['accuracy'])
-    model_logger.info(f"{model_type} CNN model built and compiled successfully.")
+    model.compile(optimizer='adam', loss=loss_function, metrics=['accuracy'])
+    print(f"{model_type} CNN model built and compiled successfully for {classification_mode} classification.")
     return model
 
 
-# ===============================
-#  HYPERPARAMETER OPTIMIZATION
-# ===============================
 
-def optimize_cnn_model(trial, input_shape, num_classes, X_train, y_train, X_val, y_val, model_type='1D'):
+
+def track_experiment_with_mlflow_and_optuna(
+    mode,
+    num_classes,
+    model_type,
+    classification_mode,
+    X_train,
+    y_train,
+    X_val,
+    y_val,
+    n_trials=20,
+):
     """
-    Optimize CNN model using Optuna.
+    Optimize hyperparameters using Optuna and track experiments with MLflow.
 
-    Args:
-        trial: Optuna trial object.
-        input_shape: Shape of the input data.
-        num_classes: Number of output classes.
-        X_train: Training data.
-        y_train: Training labels.
-        X_val: Validation data.
-        y_val: Validation labels.
-        model_type: Type of model ('1D' or '2D').
-
-    Returns:
-        Best validation accuracy.
-    """
-    n_filters = trial.suggest_int("n_filters", 16, 64, step=16)
-    dense_units = trial.suggest_int("dense_units", 64, 256, step=64)
-    dropout_rate = trial.suggest_float("dropout_rate", 0.1, 0.5, step=0.1)
-
-    model = build_cnn_model(input_shape, n_filters, dense_units, dropout_rate, num_classes, model_type=model_type)
-    history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=32, verbose=0)
-
-    val_accuracy = max(history.history['val_accuracy'])
-    return val_accuracy
-
-
-def run_optuna_optimization(model_type, input_shape, num_classes, X_train, y_train, X_val, y_val, n_trials=20):
-    """
-    Run Optuna optimization for a given model type.
-
-    Args:
-        model_type: Type of model to optimize ('1D' or '2D').
-        input_shape: Shape of the input data.
-        num_classes: Number of output classes.
-        X_train: Training data.
-        y_train: Training labels.
-        X_val: Validation data.
-        y_val: Validation labels.
-        n_trials: Number of trials for Optuna optimization.
-
-    Returns:
-        Best hyperparameters.
+    Parameters:
+    - mode: Feature extraction mode (e.g., 'augmented', 'mfcc', 'log_mel').
+    - num_classes: Number of classes for classification.
+    - model_type: Type of model ('1D' for Conv1D, '2D' for Conv2D).
+    - classification_mode: 'binary' for binary classification, 'multi' for multi-class classification.
+    - X_train, y_train: Training data and labels.
+    - X_val, y_val: Validation data and labels.
+    - n_trials: Number of Optuna trials.
     """
     def objective(trial):
-        return optimize_cnn_model(trial, input_shape, num_classes, X_train, y_train, X_val, y_val, model_type)
+        with mlflow.start_run(nested=True):
+            # Hyperparameters to tune
+            n_filters = trial.suggest_categorical('n_filters', [16, 32, 64])
+            dense_units = trial.suggest_int('dense_units', 64, 256, step=32)
+            dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5, step=0.1)
+            learning_rate = trial.suggest_loguniform('learning_rate', 1e-4, 1e-2)
 
-    study = optuna.create_study(direction="maximize")
+            # Build and compile the model
+            model = build_model(
+                input_shape=X_train.shape[1:], 
+                n_filters=n_filters, 
+                dense_units=dense_units, 
+                dropout_rate=dropout_rate,
+                num_classes=num_classes,
+                model_type=model_type,
+                classification_mode=classification_mode
+            )
+
+            # Define EarlyStopping callback
+            early_stopping = EarlyStopping(
+                monitor='val_loss', 
+                patience=5,  
+                restore_best_weights=True
+            )
+
+            # Train the model
+            history = model.fit(
+                X_train,
+                y_train,
+                validation_data=(X_val, y_val),
+                epochs=50,
+                batch_size=32,
+                callbacks=[early_stopping],
+                verbose=0,
+            )
+
+            # Log hyperparameters and metrics to MLflow
+            mlflow.log_params({
+                'n_filters': n_filters,
+                'dense_units': dense_units,
+                'dropout_rate': dropout_rate,
+                'learning_rate': learning_rate,
+                'model_type': model_type,
+                'classification_mode': classification_mode,
+            })
+            mlflow.log_metric("best_val_accuracy", max(history.history['val_accuracy']))
+
+            # Save loss curves
+            plt.figure()
+            plt.plot(history.history['loss'], label='Train Loss')
+            plt.plot(history.history['val_loss'], label='Validation Loss')
+            plt.legend()
+            plt.title("Training and Validation Loss")
+            loss_curve_path = f"loss_curve_{trial.number}_{model_type}.png"
+            plt.savefig(loss_curve_path)
+            mlflow.log_artifact(loss_curve_path)
+
+            return max(history.history['val_accuracy'])
+
+    # Start Optuna study
+    study = optuna.create_study(direction='maximize')
     study.optimize(objective, n_trials=n_trials)
 
-    model_logger.info(f"Best trial for {model_type} CNN: {study.best_trial.params}")
-    return study.best_trial.params
+    # Retrieve the best trial and log results
+    best_trial = study.best_trial
+    model_logger.info(f"Best Trial for {mode} ({model_type}): {best_trial.params}")
 
-
-# ============================
-#  DATASET PREPARATION UTILS
-# ============================
-from sklearn.model_selection import train_test_split
-import numpy as np
-
-def split_dataset(X, y, test_size=0.3, validation_size=0.5, random_state=42):
-    """
-    Split dataset into training, validation, and test sets.
-
-    Args:
-        X: Feature data.
-        y: Labels.
-        test_size: Proportion of the data to reserve for testing.
-        validation_size: Proportion of the test set to reserve for validation.
-        random_state: Random seed.
-
-    Returns:
-        X_train, X_val, X_test, y_train, y_val, y_test
-    """
-    model_logger.info("Splitting dataset into training, validation, and test sets...")
-    
-    # Check for minimum class size
-    class_counts = np.sum(y, axis=0) if len(y.shape) > 1 else np.bincount(y)
-    if np.any(class_counts < 2):
-        model_logger.warning("Some classes have fewer than 2 samples. Stratification will be disabled.")
-        stratify_train = None
-        stratify_test = None
-    else:
-        stratify_train = y
-        stratify_test = y
-    
-    # Split training and test data
-    X_train, X_temp, y_train, y_temp = train_test_split(
-        X, y, test_size=test_size, stratify=stratify_train, random_state=random_state
+    # Build and return the best model
+    best_model = build_model(
+        input_shape=X_train.shape[1:], 
+        n_filters=best_trial.params['n_filters'], 
+        dense_units=best_trial.params['dense_units'], 
+        dropout_rate=best_trial.params['dropout_rate'], 
+        num_classes=num_classes,
+        model_type=model_type,
+        classification_mode=classification_mode
     )
-    
-    # Split validation and test data
-    class_counts_temp = np.sum(y_temp, axis=0) if len(y_temp.shape) > 1 else np.bincount(y_temp)
-    if np.any(class_counts_temp < 2):
-        model_logger.warning("Some classes in the temporary test set have fewer than 2 samples. Stratification will be disabled for the validation split.")
-        stratify_temp = None
-    else:
-        stratify_temp = y_temp
 
-    X_val, X_test, y_val, y_test = train_test_split(
-        X_temp, y_temp, test_size=validation_size, stratify=stratify_temp, random_state=random_state
+    # Train the best model
+    early_stopping = EarlyStopping(
+        monitor='val_loss',
+        patience=5,
+        restore_best_weights=True,
     )
-    
-    model_logger.info("Dataset split completed.")
-    return X_train, X_val, X_test, y_train, y_val, y_test
+    best_model.fit(
+        X_train, y_train,
+        validation_data=(X_val, y_val),
+        epochs=50,
+        batch_size=32,
+        callbacks=[early_stopping],
+        verbose=1,
+    )
+
+    # Save the best model
+    best_model_path = f"best_model_{mode}_{model_type}.h5"
+    best_model.save(best_model_path)
+    mlflow.log_artifact(best_model_path)
+    model_logger.info(f"Best model for {mode} ({model_type}) saved successfully.")
+
+    return best_model

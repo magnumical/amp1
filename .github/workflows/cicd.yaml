@@ -37,6 +37,24 @@ jobs:
         run: |
           python LegacyTraining/train.py --debug
 
+  training-module-code:
+    name: Run Training Code
+    runs-on: ubuntu-latest
+    needs: respiratory-analysis
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Training
+        run: |
+          python Train.py --debug
+
+
   single-fileinference-code:
     name: Test the Trained Models
     runs-on: ubuntu-latest
@@ -70,3 +88,26 @@ jobs:
       - name: Run Testing Code on an Unseen Testing Set
         run: |
           python TestModels.py
+
+  deploy-UI:
+    name: Test the Trained Models with Unseen Testing Set
+    runs-on: ubuntu-latest
+    needs: out-of-bag-testing-code
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start Streamlit Server
+        run: |
+          streamlit run app.py --server.port 8501 &
+        background: true
+    
+      - name: Test Streamlit UI
+        run: |
+          curl --fail http://localhost:8501 || exit 1
+        
