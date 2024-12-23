@@ -17,3 +17,4 @@ tensorflow_intel
 tqdm
 fsspec
 prometheus_client
+argparse
