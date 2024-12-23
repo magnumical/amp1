@@ -75,14 +75,16 @@ def run():
     # Explore Data Tab
     with tabs[1]:
         st.header("Explore Data")
+        shortest_file = os.path.basename(audio_df.loc[audio_df['duration_sec'].idxmin(), 'file_name'])
+        longest_file = os.path.basename(audio_df.loc[audio_df['duration_sec'].idxmax(), 'file_name'])
 
         if audio_df is not None and not audio_df.empty:
             st.subheader("Key Audio Insights")
             st.markdown(f"""
             - **Total Audio Files:** {len(audio_df)}
             - **Average Duration:** {audio_df['duration_sec'].mean():.2f} seconds
-            - **Shortest Audio File:** {audio_df.loc[audio_df['duration_sec'].idxmin(), 'file_name']} ({audio_df['duration_sec'].min():.2f} seconds)
-            - **Longest Audio File:** {audio_df.loc[audio_df['duration_sec'].idxmax(), 'file_name']} ({audio_df['duration_sec'].max():.2f} seconds)
+            - **Shortest Audio File:** {shortest_file} ({audio_df['duration_sec'].min():.2f} seconds)
+            - **Longest Audio File:** {longest_file} ({audio_df['duration_sec'].max():.2f} seconds)
             """)
 
             # Duration Distribution

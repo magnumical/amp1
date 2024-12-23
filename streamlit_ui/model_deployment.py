@@ -236,18 +236,64 @@ def classify_audio_with_metrics(model_type, feature_type, file_path):
     finally:
         RESPONSE_TIME.observe(time.time() - start_time)  # Observe response time
 
-
 # Tabs for Model Deployment
 def run():
-    st.header("Respiratory Sound Classifier")
+    st.title("Respiratory Sound Classifier: Inference and Deployment")
+
+    st.markdown("""
+    Welcome to the **Inference and Deployment** page! This tool allows you to classify respiratory sounds 
+    into various categories using pre-trained models. Choose one of the two modes below based on your needs:
+
+    - **Quick Multiclass Mode:** A fast and straightforward way to classify audio files using a multiclass model with augmented features.
+    - **Flexible Mode:** Customize the classification process by selecting your preferred model type (binary/multi) and feature type (MFCC, Log-Mel, or Augmented).
+
+    Upload your respiratory audio files and let the classifier do the rest!
+    """)
 
     # Tabs for two modes
-    tab1, tab2 = st.tabs(["Flexible Mode", "Quick Multiclass (Augmented) Mode"])
+    tab1, tab2 = st.tabs(["Quick Multiclass Mode", "Flexible Mode"])
 
-    # Tab 1: Flexible Mode
+    # Tab 1: Quick Multiclass (Augmented) Mode
     with tab1:
+        st.subheader("Quick Multiclass (Augmented) Mode")
+        st.markdown("""
+        This mode is optimized for quick classification of respiratory sounds into multiple categories 
+        (e.g., Chronic Respiratory Diseases, Normal, Respiratory Infections). It automatically uses the 
+        multiclass model with augmented features for robust and accurate results.
+        """)
+        
+        uploaded_file = st.file_uploader(
+            "Upload an Audio File for Multiclass Classification",
+            type=["wav", "mp3"],
+            help="Supported formats: WAV, MP3",
+        )
+
+        if uploaded_file is not None:
+            temp_file_path = save_uploaded_file(uploaded_file)
+            st.audio(temp_file_path, format="audio/wav", start_time=0)
+
+            try:
+                with st.spinner("Classifying the audio file, please wait..."):
+                    predicted_class, probabilities = classify_audio_with_metrics(
+                        model_type="multi", feature_type="augmented", file_path=temp_file_path
+                    )
+
+                # Display results
+                display_results(predicted_class, probabilities, "multi")
+
+            except Exception as e:
+                st.error(f"Error: {e}")
+            finally:
+                os.remove(temp_file_path)
+
+    # Tab 2: Flexible Mode
+    with tab2:
         st.subheader("Flexible Mode")
-        st.write("Select model type and feature type for audio classification.")
+        st.markdown("""
+        The Flexible Mode gives you control over the classification process. Select the model type 
+        (binary or multiclass) and the feature type (MFCC, Log-Mel, or Augmented) to suit your specific requirements.
+        """)
+        
         model_type = st.selectbox(
             "Select Model Type",
             ["binary", "multi"],
@@ -276,34 +322,6 @@ def run():
 
                 # Display results
                 display_results(predicted_class, probabilities, model_type)
-
-            except Exception as e:
-                st.error(f"Error: {e}")
-            finally:
-                os.remove(temp_file_path)
-
-    # Tab 2: Quick Multiclass (Augmented) Mode
-    with tab2:
-        st.subheader("Quick Multiclass (Augmented) Mode")
-        st.write("This mode automatically uses the multiclass model with augmented features.")
-        uploaded_file = st.file_uploader(
-            "Upload an Audio File for Multiclass Classification",
-            type=["wav", "mp3"],
-            help="Supported formats: WAV, MP3",
-        )
-
-        if uploaded_file is not None:
-            temp_file_path = save_uploaded_file(uploaded_file)
-            st.audio(temp_file_path, format="audio/wav", start_time=0)
-
-            try:
-                with st.spinner("Classifying the audio file, please wait..."):
-                    predicted_class, probabilities = classify_audio_with_metrics(
-                        model_type="multi", feature_type="augmented", file_path=temp_file_path
-                    )
-
-                # Display results
-                display_results(predicted_class, probabilities, "multi")
 
             except Exception as e:
                 st.error(f"Error: {e}")

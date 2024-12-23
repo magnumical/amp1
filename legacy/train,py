@@ -21,6 +21,7 @@ from keras.layers import Conv2D, Dense, MaxPooling2D, Flatten, Dropout, BatchNor
 from imblearn.over_sampling import RandomOverSampler
 from keras.preprocessing.image import ImageDataGenerator
 from imblearn.over_sampling import SMOTE
+from scipy.signal import butter, sosfilt
 
 
 from keras.models import Sequential
@@ -46,7 +47,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score,precision_score,recall_score,f1_score,matthews_corrcoef
 from sklearn.metrics import cohen_kappa_score,roc_auc_score,confusion_matrix,classification_report
 
-from scipy.signal import butter, sosfilt
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -133,7 +133,7 @@ def mfccs_feature_exteraction(audio_files_path, df_filtered, n_jobs=-1):
     processing_logger.info(f"Processing audio files in: {audio_files_path}")
     files = [file for file in os.listdir(audio_files_path) if file.endswith('.wav') and file[:3] not in ['103', '108', '115']]
    
-    #files = files[:30] ## DEBUG
+    files = files[:30] ## DEBUG
 
     # Use Parallel and delayed to process files in parallel
     results = Parallel(n_jobs=n_jobs, backend="loky")(delayed(process_audio_file)(file, audio_files_path, df_filtered) for file in tqdm(files, desc="Processing audio files"))
@@ -171,37 +171,9 @@ def pitch_shift (data , rate):
     return data
 
 
-def preprocess_audio(audio, sr):
-    """
-    Apply a bandpass filter to audio data.
-    
-    Args:
-        audio: The input audio signal.
-        sr: The sampling rate of the audio.
-        
-    Returns:
-        Filtered audio signal.
-    """
-    # Define cutoff frequencies
-    low_cutoff = 50  # 50 Hz
-    high_cutoff = min(5000, sr / 2 - 1)  # Ensure it is below Nyquist frequency
-
-    if low_cutoff >= high_cutoff:
-        raise ValueError(
-            f"Invalid filter range: low_cutoff={low_cutoff}, high_cutoff={high_cutoff} for sampling rate {sr}"
-        )
-
-    # Design a bandpass filter
-    sos = butter(N=10, Wn=[low_cutoff, high_cutoff], btype='band', fs=sr, output='sos')
-
-    # Apply the filter
-    filtered_audio = sosfilt(sos, audio)
-    return filtered_audio
 
 
-
-
-def prepare_dataset_augmented(df_filtered, audio_files_path):
+def prepare_dataset_augmented(df_filtered, audio_files_path, classification_mode):
     """Prepare the dataset using the GRU pipeline."""
     processing_logger.info("Preparing dataset with GRU pipeline.")
     
@@ -211,15 +183,23 @@ def prepare_dataset_augmented(df_filtered, audio_files_path):
     # Apply label encoding
     le = LabelEncoder()
     y_encoded = le.fit_transform(np.array(y))  # Encode labels to integers
-    y_one_hot = to_categorical(y_encoded)      # Convert to one-hot encoding
-    
-    # Log the mapping of one-hot encoding to class labels
-    print("One-hot encoding mapping:")
-    for idx, label in enumerate(le.classes_):
-        print(f"{idx} -> {label}")
+
+    if classification_mode == "binary":
+        # Use single column with 0 and 1 for binary classification
+        processing_logger.info("Binary classification mode: Using single column labels (0/1).")
+        y_processed = y_encoded  # No one-hot encoding
+    else:
+        # One-hot encode labels for multi-class classification
+        processing_logger.info("Multi-class classification mode: Applying one-hot encoding.")
+        y_processed = to_categorical(y_encoded)
+
+        # Log the mapping of one-hot encoding to class labels
+        print("One-hot encoding mapping:")
+        for idx, label in enumerate(le.classes_):
+            print(f"{idx} -> {label}")
     
     processing_logger.info("Dataset preparation with GRU pipeline complete.")
-    return X, y_one_hot, le
+    return X, y_processed, le
 
 
 
@@ -331,7 +311,7 @@ def augment_data(X, y):
 
 
 
-def prepare_dataset_parallel(df, audio_files_path, mode):
+def prepare_dataset_parallel(df, audio_files_path, mode, classification_mode):
     """Prepare the dataset by extracting features from audio files in parallel."""
     processing_logger.info(f"Preparing dataset using {mode} features in parallel.")
     results = Parallel(n_jobs=-1)(delayed(preprocess_file)(row, audio_files_path, mode) for _, row in tqdm(df.iterrows(), total=len(df)))
@@ -340,8 +320,18 @@ def prepare_dataset_parallel(df, audio_files_path, mode):
     X = np.array(X)
     X = np.expand_dims(X, axis=-1)  # Add channel dimension
     X = normalize(X, axis=1)
+    
     le = LabelEncoder()
-    y = to_categorical(le.fit_transform(np.array(y)))
+    y_encoded = le.fit_transform(np.array(y))  # Encode labels
+
+    if classification_mode == "binary":
+        # Use single column with 0 and 1 for binary classification
+        processing_logger.info("Binary classification mode: Using single column labels (0/1).")
+        y = y_encoded  # No one-hot encoding
+    else:
+        # One-hot encode labels for multi-class classification
+        processing_logger.info("Multi-class classification mode: Applying one-hot encoding.")
+        y = to_categorical(y_encoded)
 
     processing_logger.info(f"Dataset preparation using {mode} complete.")
     return X, y, le
@@ -395,8 +385,7 @@ def prepare_dataset(df, audio_files_path, mode):
     return X, y, le
 
 
-
-def build_model(input_shape, n_filters, dense_units, dropout_rate, num_classes, model_type='1D'):
+def build_model(input_shape, n_filters, dense_units, dropout_rate, num_classes, model_type='1D', classification_mode='binary'):
     """
     Build and compile a CNN model for 1D or 2D data.
 
@@ -407,13 +396,15 @@ def build_model(input_shape, n_filters, dense_units, dropout_rate, num_classes, 
         dropout_rate: Dropout rate for regularization.
         num_classes: Number of output classes.
         model_type: '1D' for 1D CNN or '2D' for 2D CNN.
+        classification_mode: 'binary' for binary classification, 'multi' for multi-class classification.
 
     Returns:
         Compiled CNN model.
     """
-    print(f"Building the updated {model_type} CNN model.")
+    print(f"Building the updated {model_type} CNN model with {classification_mode} classification.")
     model = Sequential()
 
+    # Add convolutional layers based on the model type
     if model_type == '1D':
         # 1D CNN layers
         model.add(Conv1D(n_filters, kernel_size=3, activation='relu', input_shape=input_shape))
@@ -453,17 +444,26 @@ def build_model(input_shape, n_filters, dense_units, dropout_rate, num_classes, 
     else:
         raise ValueError("Invalid model_type. Must be '1D' or '2D'.")
 
-    # Fully connected layers
+    # Add fully connected layers
     model.add(Dense(dense_units, activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(dropout_rate))
-    # Final output layer with softmax for one-hot encoded outputs
-    model.add(Dense(num_classes, activation='softmax'))
 
-    # Compile the model with categorical crossentropy
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    print(f"{model_type} CNN model built and compiled successfully.")
+    # Add output layer dynamically based on classification mode
+    if classification_mode == 'binary':
+        # Binary classification: Single unit with sigmoid activation
+        model.add(Dense(1, activation='sigmoid'))
+        loss_function = 'binary_crossentropy'
+    else:
+        # Multi-class classification: num_classes units with softmax activation
+        model.add(Dense(num_classes, activation='softmax'))
+        loss_function = 'categorical_crossentropy'
+
+    # Compile the model
+    model.compile(optimizer='adam', loss=loss_function, metrics=['accuracy'])
+    print(f"{model_type} CNN model built and compiled successfully for {classification_mode} classification.")
     return model
+
 
 
 def log_metrics(y_true, y_pred, mode):
@@ -517,7 +517,7 @@ def evaluate_model(model, X_test, y_test, le, mode):
     model_logger.info(f"Model evaluation using {mode} features complete.")
 
 
-def track_experiment_with_mlflow_and_optuna(mode, num_classes, model_type='1D'):
+def track_experiment_with_mlflow_and_optuna(mode, num_classes, model_type='1D', classification_mode='binary'):
     """
     Optimize hyperparameters using Optuna and track experiments with MLflow.
 
@@ -525,6 +525,7 @@ def track_experiment_with_mlflow_and_optuna(mode, num_classes, model_type='1D'):
         mode: Feature extraction mode (e.g., 'gru', 'mfcc', 'log_mel').
         num_classes: Number of classes for classification.
         model_type: Type of model ('1D' for Conv1D, '2D' for Conv2D).
+        classification_mode: 'binary' for binary classification, 'multi' for multi-class classification.
     """
     def objective(trial):
         with mlflow.start_run(nested=True):  # Start a new MLflow run for each trial
@@ -541,17 +542,26 @@ def track_experiment_with_mlflow_and_optuna(mode, num_classes, model_type='1D'):
                 dense_units=dense_units, 
                 dropout_rate=dropout_rate,
                 num_classes=num_classes,
-                model_type=model_type  # Pass model type to build_model
+                model_type=model_type,
+                classification_mode=classification_mode
             )
-            model.compile(
-                optimizer=Adamax(learning_rate=learning_rate),
-                loss='binary_crossentropy' if num_classes == 1 else 'categorical_crossentropy',
-                metrics=['accuracy']
+
+            # Define EarlyStopping callback
+            early_stopping = EarlyStopping(
+                monitor='val_loss',  # Monitor validation loss
+                patience=5,          # Stop training after 5 epochs with no improvement
+                restore_best_weights=True
             )
 
             # Train the model
-            history = model.fit(X_train, y_train, validation_data=(X_val, y_val), 
-                                epochs=10, batch_size=32, verbose=0)
+            history = model.fit(
+                X_train, y_train, 
+                validation_data=(X_val, y_val), 
+                epochs=50,  # Allow a larger max epoch since EarlyStopping will handle early termination
+                batch_size=32, 
+                callbacks=[early_stopping], 
+                verbose=0
+            )
 
             # Log hyperparameters and metrics to MLflow
             mlflow.log_params({
@@ -559,7 +569,8 @@ def track_experiment_with_mlflow_and_optuna(mode, num_classes, model_type='1D'):
                 'dense_units': dense_units,
                 'dropout_rate': dropout_rate,
                 'learning_rate': learning_rate,
-                'model_type': model_type
+                'model_type': model_type,
+                'classification_mode': classification_mode
             })
             mlflow.log_metric("best_val_accuracy", max(history.history['val_accuracy']))
 
@@ -583,21 +594,31 @@ def track_experiment_with_mlflow_and_optuna(mode, num_classes, model_type='1D'):
     best_trial = study.best_trial
     model_logger.info(f"Best Trial for {mode} ({model_type}): {best_trial.params}")
 
-    # Build and train the best model
+    # Build the best model (already compiled in build_model)
     best_model = build_model(
         input_shape=X_train.shape[1:], 
         n_filters=best_trial.params['n_filters'], 
         dense_units=best_trial.params['dense_units'], 
         dropout_rate=best_trial.params['dropout_rate'], 
         num_classes=num_classes,
-        model_type=model_type
+        model_type=model_type,
+        classification_mode=classification_mode
     )
-    best_model.compile(
-        optimizer=Adamax(learning_rate=best_trial.params['learning_rate']),
-        loss='binary_crossentropy' if num_classes == 1 else 'categorical_crossentropy',
-        metrics=['accuracy']
+
+    # Train the best model with EarlyStopping
+    early_stopping = EarlyStopping(
+        monitor='val_loss',
+        patience=5,
+        restore_best_weights=True
     )
-    best_model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=32, verbose=1)
+
+    best_model.fit(
+        X_train, y_train, 
+        validation_data=(X_val, y_val), 
+        epochs=50, batch_size=32, 
+        callbacks=[early_stopping], 
+        verbose=1
+    )
 
     # Save the best model
     best_model_path = f"best_model_{mode}_{model_type}.h5"
@@ -607,18 +628,47 @@ def track_experiment_with_mlflow_and_optuna(mode, num_classes, model_type='1D'):
 
     return best_model
 
-
-
 def log_class_distribution(y, message):
     """Log the class distribution."""
-    unique, counts = np.unique(np.argmax(y, axis=1), return_counts=True)
+    if y.ndim == 1:  # Binary classification (1D array of 0s and 1s)
+        unique, counts = np.unique(y, return_counts=True)
+    else:  # Multi-class classification (2D one-hot encoded array)
+        unique, counts = np.unique(np.argmax(y, axis=1), return_counts=True)
+
     class_distribution = dict(zip(unique, counts))
     processing_logger.info(f"{message} Class Distribution: {class_distribution}")
 
 
+def preprocess_audio(audio, sr):
+    """
+    Apply a bandpass filter to audio data.
+    
+    Args:
+        audio: The input audio signal.
+        sr: The sampling rate of the audio.
+        
+    Returns:
+        Filtered audio signal.
+    """
+    # Define cutoff frequencies
+    low_cutoff = 50  # 50 Hz
+    high_cutoff = min(5000, sr / 2 - 1)  # Ensure it is below Nyquist frequency
+
+    if low_cutoff >= high_cutoff:
+        raise ValueError(
+            f"Invalid filter range: low_cutoff={low_cutoff}, high_cutoff={high_cutoff} for sampling rate {sr}"
+        )
+
+    # Design a bandpass filter
+    sos = butter(N=10, Wn=[low_cutoff, high_cutoff], btype='band', fs=sr, output='sos')
+
+    # Apply the filter
+    filtered_audio = sosfilt(sos, audio)
+    return filtered_audio
+
 
 def main():
-    mlflow.end_run() 
+    mlflow.end_run()
     
     data_logger.info("Starting data pipeline.")
     df = load_data()
@@ -626,8 +676,8 @@ def main():
     df_all = merge_datasets(audio_metadata, df)
 
     # Define classification modes and feature types
-    classification_modes = ['multi', 'binary']  # Options: 'binary', 'multi'
-    feature_types = ['augmented', 'mfcc', 'log_mel']  # Options: 
+    classification_modes = [ 'multi', 'binary']  # Options: 'binary', 'multi'
+    feature_types = ['mfcc', 'log_mel', 'augmented']  # Options
     models = []
 
     for classification_mode in classification_modes:
@@ -641,9 +691,18 @@ def main():
 
             # Prepare the dataset
             if feature_type == 'augmented':
-                X, y, le = prepare_dataset_augmented(df_filtered, '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files')
+                X, y, le = prepare_dataset_augmented(
+                    df_filtered, 
+                    '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files',
+                    classification_mode=classification_mode
+                )
             else:
-                X, y, le = prepare_dataset_parallel(df_filtered, '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files', mode=feature_type)
+                X, y, le = prepare_dataset_parallel(
+                    df_filtered, 
+                    '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files',
+                    mode=feature_type,
+                    classification_mode=classification_mode
+                )
 
             # Split data into train/val/test
             X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
@@ -665,6 +724,12 @@ def main():
                 processing_logger.warning(f"SMOTE skipped: {e}")
             log_class_distribution(y_train, "After Oversampling")
 
+            # Determine number of classes
+            if classification_mode == "binary":
+                num_classes = 1  # Single output for binary classification
+            else:
+                num_classes = y_train.shape[1]  # Number of classes for multi-class
+
             # Train and save model
             with mlflow.start_run(run_name=f"Experiment_{classification_mode}_{feature_type}", nested=True):
                 if feature_type == 'augmented':
@@ -676,19 +741,18 @@ def main():
                     # Optimize and train 1D CNN
                     model = track_experiment_with_mlflow_and_optuna(
                         mode=feature_type,
-                        num_classes=y_train.shape[1],
-                        model_type='1D'  # Specify 1D CNN for GRU features
+                        num_classes=num_classes,
+                        model_type='1D',  # Specify 1D CNN for GRU features
+                        classification_mode=classification_mode
                     )
                 else:
                     # Optimize and train CNN models for MFCC and MEL
                     model = track_experiment_with_mlflow_and_optuna(
                         mode=feature_type,
-                        num_classes=y_train.shape[1],
-                        model_type='2D'  # Specify 2D CNN for MFCC and Log-Mel
+                        num_classes=num_classes,
+                        model_type='2D',  # Specify 2D CNN for MFCC and Log-Mel
+                        classification_mode=classification_mode
                     )
-
-                # Log evaluation metrics
-                #evaluate_model(model, X_test, y_test, le, mode=feature_type)
 
                 # Save final model
                 final_model_path = f"final_model_{classification_mode}_{feature_type}.h5"
@@ -698,6 +762,6 @@ def main():
 
     processing_logger.info("All experiments completed successfully!")
 
+
 if __name__ == "__main__":
     main()
-
