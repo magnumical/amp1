@@ -9,6 +9,17 @@ import librosa.display
 import scipy.signal as signal
 
 class RespiratorySoundAnalysis:
+    """
+    A class to perform analysis and preprocessing of respiratory sound recordings.
+
+    Attributes:
+        diagnosis_file (str): Path to the CSV file containing patient diagnoses.
+        audio_path (str): Path to the directory containing audio files.
+        diagnosis_df (DataFrame): DataFrame to hold diagnosis data.
+        audio_files (list): List of audio file paths.
+        audio_df (DataFrame): DataFrame to hold audio file properties.
+        merged_df (DataFrame): DataFrame combining audio properties with diagnosis data.
+    """
     def __init__(self, diagnosis_file, audio_path):
         self.diagnosis_file = diagnosis_file
         self.audio_path = audio_path
@@ -188,11 +199,22 @@ class RespiratorySoundAnalysis:
         return y_normalized, target_sr
 
 # Entry point for standalone execution
-if __name__ == "__main__":
-    diagnosis_file = '../data//Respiratory_Sound_Database//patient_diagnosis.csv'
-    audio_path = '../data/Respiratory_Sound_Database/testsample'
 
-    analysis = RespiratorySoundAnalysis(diagnosis_file, audio_path)
+    #diagnosis_file = './data//Respiratory_Sound_Database//patient_diagnosis.csv'
+    #audio_path = './data/Respiratory_Sound_Database/testsample'
+
+
+
+# Entry point for standalone execution
+# python Exploration/inference.py --diagnosis_file './data//Respiratory_Sound_Database//patient_diagnosis.csv --audio_path ./data/Respiratory_Sound_Database/testsample
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run analysis on respiratory sound data.")
+    parser.add_argument("--diagnosis_file", type=str, required=True, help="Path to the patient diagnosis CSV file.")
+    parser.add_argument("--audio_path", type=str, required=True, help="Path to the directory containing audio files.")
+    args = parser.parse_args()
+
+    analysis = RespiratorySoundAnalysis(args.diagnosis_file, args.audio_path)
 
     # Load and analyze data
     analysis.load_diagnosis_data()
@@ -201,9 +223,9 @@ if __name__ == "__main__":
     analysis.analyze_audio_properties()
     analysis.plot_audio_duration_distribution()
 
-    # Visualize sample audio
+    # Visualize a sample audio file
     if analysis.audio_files:
-        analysis.visualize_sample_audio(analysis.audio_files[0])
+        analysis.visualize_sample_audio(os.path.basename(analysis.audio_files[0]))
 
     # Merge data
     analysis.merge_audio_and_diagnosis_data()

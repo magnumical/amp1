@@ -9,10 +9,10 @@ import os
 from Exploration.inference import RespiratorySoundAnalysis
 
 # Define base paths
-BASE_PATH = 'D://github//AmpleHealth//data//Respiratory_Sound_Database'
+BASE_PATH = './/data//Respiratory_Sound_Database'
 DIAGNOSIS_FILE = os.path.join(BASE_PATH, 'patient_diagnosis.csv')
 AUDIO_PATH = os.path.join(BASE_PATH, 'testsample')
-DEMOGRAPHIC_FILE = os.path.join('D://github//AmpleHealth//data', 'demographic_info.txt')
+DEMOGRAPHIC_FILE = os.path.join('.//data', 'demographic_info.txt')
 
 # Initialize analysis object
 analysis = RespiratorySoundAnalysis(DIAGNOSIS_FILE, AUDIO_PATH)

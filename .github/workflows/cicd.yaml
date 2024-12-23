@@ -7,9 +7,16 @@ jobs:
       - uses: actions/checkout@v2
       #- uses: actions/setup-python@v4
       #- uses: iterative/setup-cml@v1
-      - name: Explore Data
-        env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          python Exploration/inference.py
+
+      - name: Run Respiratory Analysis
+        run: |
+          python Exploration/inference.py \
+            --diagnosis_file './data/Respiratory_Sound_Database/patient_diagnosis.csv' \
+            --audio_path './data/Respiratory_Sound_Database/testsample'
+
+          
