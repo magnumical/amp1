@@ -9,7 +9,7 @@ import logging
 from prometheus_client import Counter, Histogram, start_http_server
 import time
 from scipy.signal import butter, sosfilt
-
+import pandas as pd
  
 
 # Set up logging
@@ -42,7 +42,8 @@ RESPONSE_TIME = Histogram('audio_classifier_response_time_seconds', 'Time taken 
 ERROR_COUNT = Counter('audio_classifier_errors_total', 'Total number of errors during classification')
 
 # Start Prometheus HTTP server
-start_http_server(9100)  # Expose metrics at http://localhost:9100/metrics
+start_http_server(9100, addr="0.0.0.0")  # Expose metrics on 9100 for external scraping
+# Expose metrics at http://localhost:9100/metrics
 
 
 def filtering(audio, sr):
@@ -236,7 +237,6 @@ def classify_audio_with_metrics(model_type, feature_type, file_path):
     finally:
         RESPONSE_TIME.observe(time.time() - start_time)  # Observe response time
 
-# Tabs for Model Deployment
 def run():
     st.title("Respiratory Sound Classifier: Inference and Deployment")
 
@@ -246,12 +246,11 @@ def run():
 
     - **Quick Multiclass Mode:** A fast and straightforward way to classify audio files using a multiclass model with augmented features.
     - **Flexible Mode:** Customize the classification process by selecting your preferred model type (binary/multi) and feature type (MFCC, Log-Mel, or Augmented).
-
-    Upload your respiratory audio files and let the classifier do the rest!
+    - **Metrics Dashboard:** Monitor live metrics including request counts, response times, and error rates.
     """)
 
-    # Tabs for two modes
-    tab1, tab2 = st.tabs(["Quick Multiclass Mode", "Flexible Mode"])
+    # Tabs for three modes
+    tab1, tab2, tab3 = st.tabs(["Quick Multiclass Mode", "Flexible Mode", "Metrics Dashboard"])
 
     # Tab 1: Quick Multiclass (Augmented) Mode
     with tab1:
@@ -328,6 +327,58 @@ def run():
             finally:
                 os.remove(temp_file_path)
 
+    # Tab 3: Metrics Dashboard
+    # Tab 3: Metrics Dashboard
+
+
+    with tab3:
+        st.subheader("Metrics Dashboard")
+        st.markdown("""
+        This dashboard shows live metrics for the application, including request counts, response times, 
+        and error counts. These metrics are tracked internally and updated in real-time.
+        """)
+
+        # Real-time metrics visualization
+        col1, col2, col3 = st.columns(3)
+
+        # Display live metrics
+        with col1:
+            st.metric("Total Requests", REQUEST_COUNT._value.get())
+        with col2:
+            st.metric("Total Errors", ERROR_COUNT._value.get())
+        with col3:
+            # Calculate average response time
+            response_time_sum = RESPONSE_TIME._sum.get() if hasattr(RESPONSE_TIME, '_sum') else 0
+            response_time_count = RESPONSE_TIME._count.get() if hasattr(RESPONSE_TIME, '_count') else 0
+            avg_response_time = response_time_sum / response_time_count if response_time_count > 0 else 0
+            st.metric("Avg Response Time (s)", f"{avg_response_time:.3f}")
+
+        # Response Time Histogram Visualization
+        st.markdown("### Response Time Distribution")
+
+        if hasattr(RESPONSE_TIME, "_buckets"):
+            # Exclude the +Inf bucket
+            response_time_data = RESPONSE_TIME._buckets[:-1]  
+            response_time_labels = [f"<= {bucket}" for bucket in range(1, len(response_time_data)+1)]
+
+            # Create a DataFrame for bucket counts
+            response_time_df = pd.DataFrame({
+                "Time Range": response_time_labels,
+                "Request Count": response_time_data
+            })
+
+            # Set the time range as the index
+            response_time_df.set_index("Time Range", inplace=True)
+
+            # Display the bar chart
+            st.bar_chart(response_time_df)
+
+            # Show the response time sum and average if the data is available
+            st.markdown(f"**Total Response Time Sum**: {response_time_sum:.3f} seconds")
+            st.markdown(f"**Average Response Time**: {avg_response_time:.3f} seconds")
+
+        else:
+            st.warning("No response time data available for visualization.")
 
 def save_uploaded_file(uploaded_file):
     """Save the uploaded file temporarily."""

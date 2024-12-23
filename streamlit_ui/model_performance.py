@@ -23,7 +23,7 @@ MODELS = [
 ]
 DATASETS = {
     "binary_augmented": ("X_test_binary_augmented.npy", "y_test_binary_augmented.npy"),
-    "binary_log_mel": ("X_test_binary_log_mel.npy", "y_test_binary_log_mel.nlidpy"),
+    "binary_log_mel": ("X_test_binary_log_mel.npy", "y_test_binary_log_mel.npy"),
     "binary_mfcc": ("X_test_binary_mfcc.npy", "y_test_binary_mfcc.npy"),
     "multi_augmented": ("X_test_multi_augmented.npy", "y_test_multi_augmented.npy"),
     "multi_log_mel": ("X_test_multi_log_mel.npy", "y_test_multi_log_mel.npy"),
@@ -67,14 +67,26 @@ def evaluate_models():
 
             try:
                 y_pred_prob = model.predict(X_test)
-                y_pred = np.argmax(y_pred_prob, axis=1)
-                y_true = np.argmax(y_test, axis=1)
+                if len(y_test.shape) > 1:  # Multi-class, one-hot encoded
+                    y_true = np.argmax(y_test, axis=1)
+                else:  # Binary classification
+                    y_true = y_test
+
+                if y_pred_prob.shape[1] > 1:  # Multi-class classification
+                    y_pred = np.argmax(y_pred_prob, axis=1)
+                else:  # Binary classification, use threshold
+                    y_pred = (y_pred_prob > 0.5).astype(int)
 
                 accuracy = accuracy_score(y_true, y_pred)
                 precision = precision_score(y_true, y_pred, average='weighted')
                 recall = recall_score(y_true, y_pred, average='weighted')
                 f1 = f1_score(y_true, y_pred, average='weighted')
-                auc = roc_auc_score(y_test, y_pred_prob, multi_class='ovr')
+
+                # For multi-class models, ensure AUC is computed correctly
+                if y_pred_prob.shape[1] > 1:  # Multi-class
+                    auc = roc_auc_score(y_test, y_pred_prob, multi_class='ovr')
+                else:  # Binary classification
+                    auc = roc_auc_score(y_true, y_pred_prob)
 
                 metrics_dict.append({
                     "Model": mode_key,
@@ -84,6 +96,9 @@ def evaluate_models():
                     "F1 Score": f1,
                     "ROC-AUC": auc
                 })
+
+                
+
             except Exception as e:
                 st.error(f"Error during evaluation for model {model_name}: {e}")
                 continue

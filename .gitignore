@@ -2,3 +2,6 @@
 /mlruns
 /KaggleRuns
 /data
+/models/archive
+
+/processed_datasets/old
