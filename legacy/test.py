@@ -16,37 +16,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from keras.models import Sequential
 from keras.utils import to_categorical, normalize
-from keras.layers import Conv2D, Dense, MaxPooling2D, Flatten, Dropout, BatchNormalization, GlobalAveragePooling2D
-
-from imblearn.over_sampling import RandomOverSampler
-from keras.preprocessing.image import ImageDataGenerator
+from keras.layers import Conv2D, Dense, MaxPooling2D, Dropout, BatchNormalization, GlobalAveragePooling2D
+from keras.layers import Conv1D, MaxPooling1D,GlobalAveragePooling1D
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from imblearn.over_sampling import SMOTE
 from scipy.signal import butter, sosfilt
-
-
-from keras.models import Sequential
-from keras.layers import (
-    Conv1D, Conv2D, MaxPooling1D, MaxPooling2D,
-    GlobalAveragePooling1D, GlobalAveragePooling2D,
-    Dense, Dropout, BatchNormalization
-)
-
-
-from tensorflow.keras.models import Sequential, Model, load_model
-
-from tensorflow.keras.layers import Conv1D, Conv2D, SeparableConv1D, MaxPooling1D, MaxPooling2D
-from tensorflow.keras.layers import Input, add, Flatten, Dense, BatchNormalization, Dropout, LSTM, GRU
-from tensorflow.keras.layers import GlobalMaxPooling1D, GlobalMaxPooling2D, Activation, LeakyReLU, ReLU
-
-from tensorflow.keras import regularizers
-from tensorflow.keras import backend as K
-from tensorflow.keras.optimizers import Adamax
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score,precision_score,recall_score,f1_score,matthews_corrcoef
-from sklearn.metrics import cohen_kappa_score,roc_auc_score,confusion_matrix,classification_report
-
+import argparse
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -54,32 +30,155 @@ data_logger = logging.getLogger("data_loading")
 processing_logger = logging.getLogger("data_processing")
 model_logger = logging.getLogger("model_training")
 
-# Utility Functions
-def load_data():
+######################
+#                    #
+# utility functions  #
+#                    #
+######################
+def load_data(diagnosis_path='/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/patient_diagnosis.csv',
+              demographic_path='/kaggle/input/respiratory-sound-database/demographic_info.txt'):
     """Load patient diagnosis and demographic data."""
     data_logger.info("Loading patient diagnosis and demographic data.")
-    diagnosis_df = pd.read_csv('/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/patient_diagnosis.csv', 
+    
+    # Load diagnosis data
+    diagnosis_df = pd.read_csv(diagnosis_path, 
                                names=['Patient number', 'Diagnosis'])
 
-    patient_df = pd.read_csv('/kaggle/input/respiratory-sound-database/demographic_info.txt', 
+    # Load demographic data
+    patient_df = pd.read_csv(demographic_path, 
                              names=['Patient number', 'Age', 'Sex', 'Adult BMI (kg/m2)', 'Child Weight (kg)', 'Child Height (cm)'],
                              delimiter=' ')
 
     data_logger.info("Data successfully loaded.")
+    
+    # Merge and return
     return pd.merge(left=patient_df, right=diagnosis_df, how='left')
+
+
+def process_audio_metadata(folder_path):
+    """Extract audio metadata from filenames."""
+    processing_logger.info("Extracting audio metadata from filenames.")
+    data = []
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.txt'):
+            parts = filename.split('_')
+            data.append({
+                'Patient number': int(parts[0]),
+                'Recording index': parts[1],
+                'Chest location': parts[2],
+                'Acquisition mode': parts[3],
+                'Recording equipment': parts[4].split('.')[0]
+            })
+    processing_logger.info("Audio metadata extraction complete.")
+    return pd.DataFrame(data)
+
+
+def merge_datasets(df1, df2):
+    """Merge metadata and diagnosis data."""
+    processing_logger.info("Merging metadata and diagnosis data.")
+    merged_df = pd.merge(left=df1, right=df2, how='left').sort_values('Patient number').reset_index(drop=True)
+    merged_df['audio_file_name'] = merged_df.apply(lambda row: f"{row['Patient number']}_{row['Recording index']}_{row['Chest location']}_{row['Acquisition mode']}_{row['Recording equipment']}.wav", axis=1)
+    processing_logger.info("Merging complete.")
+    return merged_df
+
+
+
+def filter_and_sample_data(df, mode='binary'):
+    """
+    Filter and sample the dataset for binary or multi-class classification.
+
+    Returns filtered and processed DataFrame.
+    """
+    processing_logger.info(f"Filtering and sampling the dataset for {mode} classification.")
+    
+    if mode == 'binary':
+        # Binary classification: Normal vs. Abnormal
+        df['Diagnosis'] = df['Diagnosis'].apply(lambda x: 'Normal' if x == 'Healthy' else 'Abnormal')
+    elif mode == 'multi':
+        # Multi-class classification: Group classes
+        # I grouped disease based on their similarities
+        processing_logger.info("Grouping classes for multi-class classification.")
+        df['Diagnosis'] = df['Diagnosis'].replace({
+            'Healthy': 'Normal',
+            'COPD': 'Chronic Respiratory Diseases',
+            'Asthma': 'Chronic Respiratory Diseases',
+            'URTI': 'Respiratory Infections',
+            'Bronchiolitis': 'Respiratory Infections',
+            'LRTI': 'Respiratory Infections',
+            'Pneumonia': 'Respiratory Infections',
+            'Bronchiectasis': 'Respiratory Infections'
+        })
+
+    # Filter out rare classes with fewer than 5 samples
+    class_counts = df['Diagnosis'].value_counts()
+    valid_classes = class_counts[class_counts >= 5].index
+    df = df[df['Diagnosis'].isin(valid_classes)].reset_index(drop=True)
+
+    processing_logger.info(f"Filtered classes: {df['Diagnosis'].unique()}")
+    processing_logger.info(f"Filtering and sampling complete with mode={mode}.")
+    return df
+
+
+def prepare_dataset_augmented(df_filtered, audio_files_path, classification_mode):
+    """Prepare the dataset for augmented features. it will be 1D array"""
+    processing_logger.info("Preparing dataset with AUGMENTED pipeline.")
+    
+    # Extract features and labels
+    X, y = mfccs_feature_exteraction(audio_files_path, df_filtered)
+    
+    # Apply label encoding
+    le = LabelEncoder()
+    y_encoded = le.fit_transform(np.array(y))  # Encode labels to integers
+
+    if classification_mode == "binary":
+        # Use single column with 0 and 1 for binary classification
+        processing_logger.info("Binary classification mode: Using single column labels (0/1).")
+        y_processed = y_encoded  # No one-hot encoding
+    else:
+        # One-hot encode labels for multi-class classification
+        processing_logger.info("Multi-class classification mode: Applying one-hot encoding.")
+        y_processed = to_categorical(y_encoded)
+
+        # Log the mapping of one-hot encoding to class labels
+        print("One-hot encoding mapping:")
+        for idx, label in enumerate(le.classes_):
+            print(f"{idx} -> {label}")
+    
+    processing_logger.info("Dataset preparation with augmented pipeline complete.")
+    return X, y_processed, le
+
+
+def mfccs_feature_exteraction(audio_files_path, df_filtered, n_jobs=-1):
+    """
+    Make the process of MFCC feature extraction faster by running jobs in-parallel
+    
+    Returns array of features extracted from the audio files and Array of target labels.
+    """
+    processing_logger.info(f"Processing audio files in: {audio_files_path}")
+    files = [file for file in os.listdir(audio_files_path) if file.endswith('.wav') and file[:3] not in ['103', '108', '115']]
+   
+    #files = files[:30] ## DEBUG
+
+    # Use Parallel and delayed to process files in parallel
+    results = Parallel(n_jobs=n_jobs, backend="loky")(delayed(process_audio_file)(file, audio_files_path, df_filtered) for file in tqdm(files, desc="Processing audio files"))
+
+    # Flatten results
+    X_ = []
+    y_ = []
+    for X_local, y_local in results:
+        X_.extend(X_local)
+        y_.extend(y_local)
+
+    X_data = np.array(X_)
+    y_data = np.array(y_)
+    processing_logger.info("MFCC feature extraction and augmentation complete.")
+    return X_data, y_data
 
 
 def process_audio_file(soundDir, audio_files_path, df_filtered):
     """
     Process a single audio file: extract MFCC features and augment with noise, stretching, and shifting.
     
-    Args:
-        soundDir: Filename of the audio file.
-        audio_files_path: Path to the directory containing audio files.
-        df_filtered: Filtered DataFrame containing patient diagnosis and metadata.
-        
-    Returns:
-        Tuple containing features (X_local) and labels (y_local).
     """
     X_local = []
     y_local = []
@@ -107,49 +206,13 @@ def process_audio_file(soundDir, audio_files_path, df_filtered):
         elif augmentation == stretch:
             augmented_data = augmentation(data_x, 1.2)
         elif augmentation == pitch_shift:
-            augmented_data = augmentation(data_x, 3)
+            augmented_data = augmentation(data_x, sampling_rate, 3)
 
         mfccs_augmented = np.mean(librosa.feature.mfcc(y=augmented_data, sr=sampling_rate, n_mfcc=features).T, axis=0)
         X_local.append(mfccs_augmented)
         y_local.append(disease)
 
     return X_local, y_local
-
-
-
-def mfccs_feature_exteraction(audio_files_path, df_filtered, n_jobs=-1):
-    """
-    Extract MFCC features from audio data and augment with noise, stretching, and shifting in parallel.
-    
-    Args:
-        audio_files_path: Path to the directory containing audio files.
-        df_filtered: Filtered DataFrame containing patient diagnosis and metadata.
-        n_jobs: Number of parallel jobs (-1 to use all available cores).
-
-    Returns:
-        X_data: Array of features extracted from the audio files.
-        y_data: Array of target labels.
-    """
-    processing_logger.info(f"Processing audio files in: {audio_files_path}")
-    files = [file for file in os.listdir(audio_files_path) if file.endswith('.wav') and file[:3] not in ['103', '108', '115']]
-   
-    files = files[:30] ## DEBUG
-
-    # Use Parallel and delayed to process files in parallel
-    results = Parallel(n_jobs=n_jobs, backend="loky")(delayed(process_audio_file)(file, audio_files_path, df_filtered) for file in tqdm(files, desc="Processing audio files"))
-
-    # Flatten results
-    X_ = []
-    y_ = []
-    for X_local, y_local in results:
-        X_.extend(X_local)
-        y_.extend(y_local)
-
-    X_data = np.array(X_)
-    y_data = np.array(y_)
-    processing_logger.info("MFCC feature extraction and augmentation complete.")
-    return X_data, y_data
-
 
 
 def add_noise(data,x):
@@ -161,153 +224,11 @@ def shift(data, x):
     return np.roll(data, int(x))
 
 def stretch(data, rate):
-    """Apply time-stretching to the audio signal."""
     return librosa.effects.time_stretch(data, rate=rate)
 
+def pitch_shift (data , sr, rate):
+    return librosa.effects.pitch_shift(data, sr=sr, n_steps=rate)
 
-
-def pitch_shift (data , rate):
-    data = librosa.effects.pitch_shift(data, sr=220250, n_steps=rate)
-    return data
-
-
-
-
-def prepare_dataset_augmented(df_filtered, audio_files_path, classification_mode):
-    """Prepare the dataset using the GRU pipeline."""
-    processing_logger.info("Preparing dataset with GRU pipeline.")
-    
-    # Extract features and labels
-    X, y = mfccs_feature_exteraction(audio_files_path, df_filtered)
-    
-    # Apply label encoding
-    le = LabelEncoder()
-    y_encoded = le.fit_transform(np.array(y))  # Encode labels to integers
-
-    if classification_mode == "binary":
-        # Use single column with 0 and 1 for binary classification
-        processing_logger.info("Binary classification mode: Using single column labels (0/1).")
-        y_processed = y_encoded  # No one-hot encoding
-    else:
-        # One-hot encode labels for multi-class classification
-        processing_logger.info("Multi-class classification mode: Applying one-hot encoding.")
-        y_processed = to_categorical(y_encoded)
-
-        # Log the mapping of one-hot encoding to class labels
-        print("One-hot encoding mapping:")
-        for idx, label in enumerate(le.classes_):
-            print(f"{idx} -> {label}")
-    
-    processing_logger.info("Dataset preparation with GRU pipeline complete.")
-    return X, y_processed, le
-
-
-
-def process_audio_metadata(folder_path):
-    """Extract audio metadata from filenames."""
-    processing_logger.info("Extracting audio metadata from filenames.")
-    data = []
-    for filename in os.listdir(folder_path):
-        if filename.endswith('.txt'):
-            parts = filename.split('_')
-            data.append({
-                'Patient number': int(parts[0]),
-                'Recording index': parts[1],
-                'Chest location': parts[2],
-                'Acquisition mode': parts[3],
-                'Recording equipment': parts[4].split('.')[0]
-            })
-    processing_logger.info("Audio metadata extraction complete.")
-    return pd.DataFrame(data)
-
-def merge_datasets(df1, df2):
-    """Merge metadata and diagnosis data."""
-    processing_logger.info("Merging metadata and diagnosis data.")
-    merged_df = pd.merge(left=df1, right=df2, how='left').sort_values('Patient number').reset_index(drop=True)
-    merged_df['audio_file_name'] = merged_df.apply(lambda row: f"{row['Patient number']}_{row['Recording index']}_{row['Chest location']}_{row['Acquisition mode']}_{row['Recording equipment']}.wav", axis=1)
-    processing_logger.info("Merging complete.")
-    return merged_df
-
-def filter_and_sample_data(df, mode='binary'):
-    """
-    Filter and sample the dataset for binary or multi-class classification.
-
-    Args:
-        df: Input DataFrame containing diagnosis data.
-        mode: Specify 'binary' for Normal/Abnormal or 'multi-class' for grouped classes.
-
-    Returns:
-        Filtered and processed DataFrame.
-    """
-    processing_logger.info(f"Filtering and sampling the dataset for {mode} classification.")
-    
-    if mode == 'binary':
-        # Binary classification: Normal vs. Abnormal
-        df['Diagnosis'] = df['Diagnosis'].apply(lambda x: 'Normal' if x == 'Healthy' else 'Abnormal')
-    elif mode == 'multi':
-        # Multi-class classification: Group classes
-        processing_logger.info("Grouping classes for multi-class classification.")
-        df['Diagnosis'] = df['Diagnosis'].replace({
-            'Healthy': 'Normal',
-            'COPD': 'Chronic Respiratory Diseases',
-            'Asthma': 'Chronic Respiratory Diseases',
-            'URTI': 'Respiratory Infections',
-            'Bronchiolitis': 'Respiratory Infections',
-            'LRTI': 'Respiratory Infections',
-            'Pneumonia': 'Respiratory Infections',
-            'Bronchiectasis': 'Respiratory Infections'
-        })
-
-    # Filter out rare classes with fewer than 5 samples
-    class_counts = df['Diagnosis'].value_counts()
-    valid_classes = class_counts[class_counts >= 5].index
-    df = df[df['Diagnosis'].isin(valid_classes)].reset_index(drop=True)
-
-    processing_logger.info(f"Filtered classes: {df['Diagnosis'].unique()}")
-    processing_logger.info(f"Filtering and sampling complete with mode={mode}.")
-    return df
-
-
-def oversample_data(X, y):
-    """Apply SMOTE to balance classes."""
-    processing_logger.info("Applying SMOTE to balance classes.")
-    
-    # Save the original shape of features
-    original_shape = X.shape[1:]  
-    
-    # Flatten for SMOTE processing
-    X = X.reshape((X.shape[0], -1))
-    
-    # Convert one-hot encoded labels to integers
-    y = np.argmax(y, axis=1)
-    
-    # Apply SMOTE
-    smote = SMOTE(random_state=42)
-    X_resampled, y_resampled = smote.fit_resample(X, y)
-    
-    # Reshape back to the original dimensions
-    X_resampled = X_resampled.reshape((-1, *original_shape))
-    
-    # Convert labels back to one-hot encoding
-    y_resampled = to_categorical(y_resampled)
-    
-    processing_logger.info("SMOTE oversampling complete.")
-    return X_resampled, y_resampled
-
-
-
-def augment_data(X, y):
-    """Apply data augmentation to increase dataset size."""
-    processing_logger.info("Applying data augmentation.")
-    datagen = ImageDataGenerator(
-        rotation_range=10,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-        horizontal_flip=True
-    )
-    datagen.fit(X)
-    processing_logger.info("Data augmentation setup complete.")
-    return datagen
 
 
 
@@ -356,6 +277,7 @@ def preprocessing(audio_file, mode):
         x = x[:max_len]
 
     # Extract features
+    # I understand the common choice for n_mfcc is 13, but here i assumed we need to capture more informationm, therefore I choose 20.
     if mode == 'mfcc':
         feature = librosa.feature.mfcc(y=x, sr=sr_new, n_mfcc=20)  # Ensure consistent shape
     elif mode == 'log_mel':
@@ -364,42 +286,39 @@ def preprocessing(audio_file, mode):
 
     return feature
 
-def prepare_dataset(df, audio_files_path, mode):
-    """Prepare the dataset by extracting features from audio files."""
-    processing_logger.info(f"Preparing dataset using {mode} features.")
-    X, y = [], []
-    for _, row in tqdm(df.iterrows(), total=len(df)):
-        file_path = os.path.join(audio_files_path, row['audio_file_name'])
-        feature = preprocessing(file_path, mode)
-        X.append(feature)
-        y.append(row['Diagnosis'])
-        del feature  # Free memory after processing each file
-        gc.collect()
+def oversample_data(X, y):
+    """Apply SMOTE to balance classes."""
+    processing_logger.info("Applying SMOTE to balance classes.")
+    
+    # Save the original shape of features
+    original_shape = X.shape[1:]  
+    
+    # Flatten for SMOTE processing
+    X = X.reshape((X.shape[0], -1))
+    
+    # Convert one-hot encoded labels to integers
+    y = np.argmax(y, axis=1)
+    
+    # Apply SMOTE
+    smote = SMOTE(random_state=42)
+    X_resampled, y_resampled = smote.fit_resample(X, y)
+    
+    # Reshape back to the original dimensions
+    X_resampled = X_resampled.reshape((-1, *original_shape))
+    
+    # Convert labels back to one-hot encoding
+    y_resampled = to_categorical(y_resampled)
+    
+    processing_logger.info("SMOTE oversampling complete.")
+    return X_resampled, y_resampled
 
-    X = np.array(X)
-    X = np.expand_dims(X, axis=-1)  # Add channel dimension
-    X = normalize(X, axis=1)
-    le = LabelEncoder()
-    y = to_categorical(le.fit_transform(np.array(y)))
-    processing_logger.info(f"Dataset preparation using {mode} complete.")
-    return X, y, le
 
 
 def build_model(input_shape, n_filters, dense_units, dropout_rate, num_classes, model_type='1D', classification_mode='binary'):
     """
     Build and compile a CNN model for 1D or 2D data.
 
-    Args:
-        input_shape: Tuple specifying the input shape.
-        n_filters: Number of filters in the first convolutional layer.
-        dense_units: Number of units in the dense layer.
-        dropout_rate: Dropout rate for regularization.
-        num_classes: Number of output classes.
-        model_type: '1D' for 1D CNN or '2D' for 2D CNN.
-        classification_mode: 'binary' for binary classification, 'multi' for multi-class classification.
-
-    Returns:
-        Compiled CNN model.
+    Returns CNN model.
     """
     print(f"Building the updated {model_type} CNN model with {classification_mode} classification.")
     model = Sequential()
@@ -465,7 +384,6 @@ def build_model(input_shape, n_filters, dense_units, dropout_rate, num_classes, 
     return model
 
 
-
 def log_metrics(y_true, y_pred, mode):
     """Log evaluation metrics."""
     precision = classification_report(y_true, y_pred, output_dict=True)['weighted avg']['precision']
@@ -476,56 +394,16 @@ def log_metrics(y_true, y_pred, mode):
     mlflow.log_metric(f"{mode}_recall", recall)
     mlflow.log_metric(f"{mode}_f1_score", f1_score)
 
-def evaluate_model(model, X_test, y_test, le, mode):
-    """Evaluate the model and display results."""
-    model_logger.info(f"Evaluating the model using {mode} features.")
-    predictions = model.predict(X_test)
-    predicted_classes = np.argmax(predictions, axis=1)
-    y_true = np.argmax(y_test, axis=1)
-
-    # Confusion Matrix
-    conf_matrix = confusion_matrix(y_true, predicted_classes)
-    plt.figure(figsize=(8, 6))
-    plt.imshow(conf_matrix, interpolation='nearest', cmap=plt.cm.Blues)
-    plt.title(f"Confusion Matrix ({mode})")
-    plt.colorbar()
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    cm_path = f"confusion_matrix_{mode}.png"
-    plt.savefig(cm_path)
-    mlflow.log_artifact(cm_path)
-
-    # ROC Curve
-    fpr, tpr, _ = roc_curve(y_true, predictions[:, 1])
-    auc_score = roc_auc_score(y_true, predictions[:, 1])
-    plt.figure(figsize=(8, 6))
-    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f"ROC curve (area = {auc_score:.2f})")
-    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title(f"Receiver Operating Characteristic ({mode})")
-    plt.legend(loc="lower right")
-    roc_path = f"roc_curve_{mode}.png"
-    plt.savefig(roc_path)
-    mlflow.log_artifact(roc_path)
-
-    # Log metrics
-    mlflow.log_metric(f"{mode}_auc", auc_score)
-    log_metrics(y_true, predicted_classes, mode)
-
-    model_logger.info(f"Model evaluation using {mode} features complete.")
 
 
 def track_experiment_with_mlflow_and_optuna(mode, num_classes, model_type='1D', classification_mode='binary'):
     """
     Optimize hyperparameters using Optuna and track experiments with MLflow.
 
-    Args:
-        mode: Feature extraction mode (e.g., 'gru', 'mfcc', 'log_mel').
-        num_classes: Number of classes for classification.
-        model_type: Type of model ('1D' for Conv1D, '2D' for Conv2D).
-        classification_mode: 'binary' for binary classification, 'multi' for multi-class classification.
+    mode: Feature extraction mode (e.g., 'augmented', 'mfcc', 'log_mel').
+    num_classes: Number of classes for classification.
+    model_type: Type of model ('1D' for Conv1D, '2D' for Conv2D).
+    classification_mode: 'binary' for binary classification, 'multi' for multi-class classification.
     """
     def objective(trial):
         with mlflow.start_run(nested=True):  # Start a new MLflow run for each trial
@@ -643,12 +521,6 @@ def preprocess_audio(audio, sr):
     """
     Apply a bandpass filter to audio data.
     
-    Args:
-        audio: The input audio signal.
-        sr: The sampling rate of the audio.
-        
-    Returns:
-        Filtered audio signal.
     """
     # Define cutoff frequencies
     low_cutoff = 50  # 50 Hz
@@ -667,24 +539,96 @@ def preprocess_audio(audio, sr):
     return filtered_audio
 
 
+def generate_random_audio_data(samples=20000, feature_dim=20):
+    """Generate random audio-like data for testing purposes."""
+    X = np.random.rand(samples, feature_dim, feature_dim)  # Simulate 2D audio features
+    y = np.random.randint(0, 2, size=samples)  # Binary classification labels
+    return X, y
+
+def test_model():
+    """Test 2D CNN model with simulated audio data for debugging."""
+    print("[DEBUG] Generating simulated audio data...")
+    global X_train, X_val, X_test, y_train, y_val, y_test
+    X, y = generate_random_audio_data()
+
+    # Simulate preprocessing similar to audio processing pipeline
+    print("[DEBUG] Preprocessing simulated audio data...")
+    X_preprocessed = np.array([np.log1p(sample) for sample in X])  # Simulate a log transform or feature extraction
+
+    # Split data into train, validation, and test sets
+    X_train, X_temp, y_train, y_temp = train_test_split(X_preprocessed, y, test_size=0.3, stratify=y, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, stratify=y_temp, random_state=42)
+
+    print(f"[DEBUG] Data split: Training={X_train.shape}, Validation={X_val.shape}, Test={X_test.shape}")
+
+    # Expand dimensions for 2D CNN input
+    X_train = np.expand_dims(X_train, axis=-1)
+    X_val = np.expand_dims(X_val, axis=-1)
+    X_test = np.expand_dims(X_test, axis=-1)
+
+    print("[DEBUG] Initializing 2D CNN model...")
+    model = track_experiment_with_mlflow_and_optuna(
+        mode='mfcc',
+        num_classes=1,
+        model_type='2D',  # Specify 2D CNN for MFCC and Log-Mel
+        classification_mode='binary'
+    )
+
+    print("[DEBUG] Training the model...")
+    # Train the model with a single epoch for testing
+    model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, batch_size=32)
+
+    print("[DEBUG] Evaluating the model...")
+    results = model.evaluate(X_test, y_test)
+    print(f"[DEBUG] Test evaluation results: {results}")
+
+
 def main():
-    mlflow.end_run()
-    
+    # how to run python legacy/test.py --metadata_path data/Respiratory_Sound_Database/audio_and_txt_files --audio_files_path data/Respiratory_Sound_Database/audio_and_txt_files --demographic_path data/demographic_info.txt --diagnosis_path data/Respiratory_Sound_Database/patient_diagnosis.csv --classification_modes binary --feature_types mfcc 
+
+    # Parse arguments
+    parser = argparse.ArgumentParser(description="Run the respiratory sound analysis pipeline.")
+    parser.add_argument("--metadata_path", type=str, default="/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files", help="Path to the metadata directory.")
+    parser.add_argument("--audio_files_path", type=str, default="/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files", help="Path to the directory containing audio files.")
+    parser.add_argument("--demographic_path", type=str, default="/kaggle/input/respiratory-sound-database/demographic_info.txt", help="Path to the demographic info file.")
+    parser.add_argument("--diagnosis_path", type=str, default="/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/patient_diagnosis.csv", help="Path to the patient diagnosis CSV file.")
+    parser.add_argument("--tracking_uri", type=str, default="./mlruns", help="MLflow tracking URI.")
+    parser.add_argument("--classification_modes", type=str, nargs='+', default=['multi', 'binary'], help="Classification modes to run (default: all modes). Options: 'binary', 'multi'.")
+    parser.add_argument("--feature_types", type=str, nargs='+', default=['mfcc', 'log_mel', 'augmented'], help="Feature types to use (default: all types). Options: 'mfcc', 'log_mel', 'augmented'.")
+    parser.add_argument("--debug", action='store_true', help="Run in debug mode with random test data.")
+    args = parser.parse_args()
+
+    if args.debug:
+        test_model()
+        return
+    # Assign arguments to variables
+    metadata_path = args.metadata_path
+    audio_files_path = args.audio_files_path
+    demographic_path = args.demographic_path
+    diagnosis_path = args.diagnosis_path
+
+
+    # Set MLflow tracking URI
+    mlflow.set_tracking_uri(args.tracking_uri)
+
+    metadata_path = args.metadata_path
+    audio_files_path = args.audio_files_path
+
     data_logger.info("Starting data pipeline.")
-    df = load_data()
-    audio_metadata = process_audio_metadata('/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files')
+    df = load_data(demographic_path=demographic_path, diagnosis_path=diagnosis_path)
+    audio_metadata = process_audio_metadata(audio_files_path)
     df_all = merge_datasets(audio_metadata, df)
 
-    # Define classification modes and feature types
-    classification_modes = [ 'multi', 'binary']  # Options: 'binary', 'multi'
-    feature_types = ['mfcc', 'log_mel', 'augmented']  # Options
+    # Use user-specified or default classification modes and feature types
+    classification_modes = args.classification_modes
+    feature_types = args.feature_types
     models = []
 
     for classification_mode in classification_modes:
         # Preprocess dataset for binary or multi-class classification
         df_filtered = filter_and_sample_data(df_all, mode=classification_mode)
         processing_logger.info(f"Dataset shape for {classification_mode} mode: {df_filtered.shape}")
-        
+
         for feature_type in feature_types:
             processing_logger.info(f"Running experiment for {classification_mode} classification with {feature_type} features.")
             global X_train, X_val, X_test, y_train, y_val, y_test
@@ -693,13 +637,13 @@ def main():
             if feature_type == 'augmented':
                 X, y, le = prepare_dataset_augmented(
                     df_filtered, 
-                    '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files',
+                    audio_files_path,
                     classification_mode=classification_mode
                 )
             else:
                 X, y, le = prepare_dataset_parallel(
                     df_filtered, 
-                    '/kaggle/input/respiratory-sound-database/Respiratory_Sound_Database/Respiratory_Sound_Database/audio_and_txt_files',
+                    audio_files_path,
                     mode=feature_type,
                     classification_mode=classification_mode
                 )

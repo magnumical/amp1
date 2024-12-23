@@ -19,4 +19,9 @@ jobs:
             --diagnosis_file './data/Respiratory_Sound_Database/patient_diagnosis.csv' \
             --audio_path './data/Respiratory_Sound_Database/testsample'
 
+      - name: Run and Test Trainig code
+      run: |
+        python legacy/train.py --debug
+
+    
           
