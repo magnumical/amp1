@@ -8,9 +8,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 data_logger = logging.getLogger("data_pipeline")
 
 
-
-
-
 def load_data(diagnosis_path='.//data//Respiratory_Sound_Database//patient_diagnosis.csv',
               demographic_path='.//data//demographic_info.txt'):
     """Load patient diagnosis and demographic data."""
