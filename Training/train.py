@@ -584,7 +584,8 @@ def test_model():
 
 
 def main():
-    # how to run python legacy/test.py --metadata_path data/Respiratory_Sound_Database/audio_and_txt_files --audio_files_path data/Respiratory_Sound_Database/audio_and_txt_files --demographic_path data/demographic_info.txt --diagnosis_path data/Respiratory_Sound_Database/patient_diagnosis.csv --classification_modes binary --feature_types mfcc 
+    # how to run:
+    #  python legacy/test.py --metadata_path data/Respiratory_Sound_Database/audio_and_txt_files --audio_files_path data/Respiratory_Sound_Database/audio_and_txt_files --demographic_path data/demographic_info.txt --diagnosis_path data/Respiratory_Sound_Database/patient_diagnosis.csv --classification_modes binary --feature_types mfcc 
 
     # Parse arguments
     parser = argparse.ArgumentParser(description="Run the respiratory sound analysis pipeline.")

@@ -1,17 +1,26 @@
 name: CI/CD Pipeline
 on: [push]
+
 jobs:
-  run:
+  setup-environment:
+    name: Setup Environment
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      #- uses: actions/setup-python@v4
-      #- uses: iterative/setup-cml@v1
-
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+  respiratory-analysis:
+    name: Respiratory Analysis
+    runs-on: ubuntu-latest
+    needs: setup-environment
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
       - name: Run Respiratory Analysis
         run: |
@@ -19,9 +28,15 @@ jobs:
             --diagnosis_file './data/Respiratory_Sound_Database/patient_diagnosis.csv' \
             --audio_path './data/Respiratory_Sound_Database/testsample'
 
-      - name: Run and Test Trainig code
-        run: |
-          python legacy/train.py --debug
+  training-code:
+    name: Run and Test Training Code
+    runs-on: ubuntu-latest
+    needs: setup-environment
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-    
+      - name: Run Training Code
+        run: |
+          python Training/train.py --debug
           
