@@ -114,65 +114,92 @@ def run():
     # Preprocessing & Audio Effects Tab
     with tabs[3]:
         st.header("Preprocessing & Audio Effects")
+        # List all .wav files in the AUDIO_PATH directory
         wav_files = [f for f in os.listdir(AUDIO_PATH) if f.endswith('.wav')]
-
+        
         if wav_files:
             selected_file_name = st.selectbox("Select an Audio File", wav_files)
+
+            # Construct the full path of the selected file
             file_path = os.path.join(AUDIO_PATH, selected_file_name)
 
             try:
+                # Load raw audio
                 y_raw, sr = librosa.load(file_path)
-                st.audio(file_path, format="audio/wav")
+            except Exception as e:
+                st.error(f"Error loading audio file: {e}")
+                st.stop()
 
-                # Raw Waveform
-                st.subheader("Raw Waveform")
-                fig, ax = plt.subplots(figsize=(10, 4))
-                librosa.display.waveshow(y_raw, sr=sr, ax=ax)
-                ax.set_title("Raw Waveform", fontsize=16, fontweight='bold')
-                st.pyplot(fig)
+            # Preprocessing and Visualization
+            try:
+                y_processed, processed_sr = analysis.preprocess_audio(y_raw, sr)
 
-                # Noise Filtering
-                st.subheader("Noise Filtering")
-                y_filtered = librosa.effects.preemphasis(y_raw)
-                fig, ax = plt.subplots(figsize=(10, 4))
-                librosa.display.waveshow(y_filtered, sr=sr, ax=ax)
-                ax.set_title("Filtered Waveform (Pre-emphasis Applied)", fontsize=16, fontweight='bold')
-                st.pyplot(fig)
+                # Mel spectrogram
+                mel = librosa.feature.melspectrogram(
+                    y=y_processed, sr=processed_sr, n_fft=2048, hop_length=512, power=2.0
+                )
+                mel_db = librosa.power_to_db(mel, ref=np.max)
 
-                # Log Mel-Spectrogram
-                st.subheader("Log Mel-Spectrogram")
-                mel_spect = librosa.feature.melspectrogram(y=y_filtered, sr=sr, n_mels=128)
-                mel_spect_db = librosa.power_to_db(mel_spect, ref=np.max)
-                fig, ax = plt.subplots(figsize=(10, 6))
-                img = librosa.display.specshow(mel_spect_db, sr=sr, x_axis='time', y_axis='mel', ax=ax, cmap='viridis')
-                fig.colorbar(img, ax=ax, format="%+2.0f dB")
-                ax.set_title("Log Mel-Spectrogram", fontsize=16, fontweight='bold')
-                st.pyplot(fig)
+                # STFT
+                stft = librosa.stft(y_processed, n_fft=2048, hop_length=512)
+                stft_db = librosa.amplitude_to_db(np.abs(stft), ref=np.max)
 
-                # Fast Fourier Transform (FFT)
-                st.subheader("FFT (Frequency Domain)")
-                fft_vals = np.abs(np.fft.fft(y_filtered))
-                freqs = np.fft.fftfreq(len(fft_vals), 1 / sr)
-                fig, ax = plt.subplots(figsize=(10, 4))
-                ax.plot(freqs[:len(freqs) // 2], fft_vals[:len(fft_vals) // 2], color='blue')
-                ax.set_title("FFT - Frequency Spectrum", fontsize=16, fontweight='bold')
-                ax.set_xlabel("Frequency (Hz)")
-                ax.set_ylabel("Amplitude")
-                st.pyplot(fig)
+                # Frequency Spectrum
+                fft = np.abs(np.fft.rfft(y_processed))
+                freqs = np.fft.rfftfreq(len(y_processed), 1 / processed_sr)
 
-                # Zero Crossing Rate
-                st.subheader("Zero Crossing Rate")
-                zcr = librosa.feature.zero_crossing_rate(y_filtered)[0]
-                fig, ax = plt.subplots(figsize=(10, 4))
-                ax.plot(zcr, color='orange')
-                ax.set_title("Zero Crossing Rate Over Time", fontsize=16, fontweight='bold')
-                ax.set_xlabel("Frame Index")
-                ax.set_ylabel("Zero Crossing Rate")
+                # Zero-Crossing Rate
+                zcr = librosa.feature.zero_crossing_rate(y_processed)[0]
+
+                # RMS Energy
+                rms = librosa.feature.rms(y=y_processed)[0]
+
+                # Create subplots for visualizations
+                fig, axs = plt.subplots(3, 2, figsize=(15, 12))
+
+                # Raw waveform
+                librosa.display.waveshow(y_raw, sr=sr, ax=axs[0, 0])
+                axs[0, 0].set_title("Raw Waveform", fontsize=12)
+
+                # Preprocessed waveform
+                librosa.display.waveshow(y_processed, sr=processed_sr, ax=axs[0, 1])
+                axs[0, 1].set_title("Preprocessed Waveform", fontsize=12)
+
+                # Frequency spectrum
+                axs[1, 0].plot(freqs, fft, color='blue')
+                axs[1, 0].set_title("Frequency Spectrum", fontsize=12)
+                axs[1, 0].set_xlabel("Frequency (Hz)")
+                axs[1, 0].set_ylabel("Amplitude")
+
+                # ZCR
+                axs[1, 1].plot(zcr, color='green')
+                axs[1, 1].set_title("Zero-Crossing Rate", fontsize=12)
+                axs[1, 1].set_xlabel("Frames")
+                axs[1, 1].set_ylabel("Rate")
+
+                # RMS Energy
+                axs[2, 0].plot(rms, color='red')
+                axs[2, 0].set_title("RMS Energy", fontsize=12)
+                axs[2, 0].set_xlabel("Frames")
+                axs[2, 0].set_ylabel("RMS")
+
+                # Mel spectrogram
+                img_mel = librosa.display.specshow(
+                    mel_db, sr=processed_sr, x_axis='time', y_axis='mel', ax=axs[2, 1], cmap='viridis'
+                )
+                axs[2, 1].set_title("Mel Spectrogram", fontsize=12)
+                fig.colorbar(img_mel, ax=axs[2, 1], format="%+2.0f dB")
+
+                # Adjust layout
+                plt.tight_layout()
                 st.pyplot(fig)
 
             except Exception as e:
-                st.error(f"Error processing audio file: {e}")
+                st.error(f"Error during audio preprocessing or visualization: {e}")
+                st.stop()
 
+            # Play audio
+            st.subheader("Listen to Audio")
+            st.audio(file_path, format="audio/wav")
         else:
             st.warning("No audio files found in the directory.")
-
