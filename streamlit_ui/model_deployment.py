@@ -41,10 +41,12 @@ REQUEST_COUNT = Counter('audio_classifier_requests_total', 'Total number of requ
 RESPONSE_TIME = Histogram('audio_classifier_response_time_seconds', 'Time taken to process requests')
 ERROR_COUNT = Counter('audio_classifier_errors_total', 'Total number of errors during classification')
 
-# Start Prometheus HTTP server
-start_http_server(9100, addr="0.0.0.0")  # Expose metrics on 9100 for external scraping
-# Expose metrics at http://localhost:9100/metrics
+REQUEST_COUNT._value.set(0)  
 
+# Start Prometheus HTTP server
+start_http_server(9100, addr="0.0.0.0")  
+
+individual_response_times = []
 
 def filtering(audio, sr):
     """
@@ -72,6 +74,26 @@ def filtering(audio, sr):
     # Apply the filter
     filtered_audio = sosfilt(sos, audio)
     return filtered_audio
+
+
+def save_uploaded_file(uploaded_file):
+    """Save the uploaded file temporarily."""
+    temp_file_path = os.path.join("temp_audio", uploaded_file.name)
+    os.makedirs("temp_audio", exist_ok=True)
+    with open(temp_file_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    return temp_file_path
+
+
+def display_results(predicted_class, probabilities, model_type):
+    """Display the classification results."""
+    class_label = CLASS_NAMES[model_type][predicted_class]
+    st.success(f"Classification Complete! Predicted Class: **{class_label}**")
+    st.write("### Prediction Probabilities")
+    class_probabilities = {
+        CLASS_NAMES[model_type][i]: prob for i, prob in enumerate(probabilities)
+    }
+    st.bar_chart(class_probabilities)
 
 ## Augmentation Functions
 def add_noise(data, noise_factor=0.001):
@@ -180,6 +202,8 @@ def _reshape_feature(feature, input_shape):
         feature = np.pad(feature, (0, expected_time_frames - len(feature)))
 
     return feature
+
+
 def classify_audio(model_type, feature_type, file_path):
     """
     Classify an audio file using the specified model.
@@ -220,22 +244,25 @@ def classify_audio(model_type, feature_type, file_path):
     logger.info(f"Prediction complete. Predicted class: {predicted_class}, Probabilities: {probabilities}")
     return predicted_class, probabilities
 
-
 def classify_audio_with_metrics(model_type, feature_type, file_path):
-    """
-    Wrapper around classify_audio to include Prometheus metrics.
-    """
-    REQUEST_COUNT.inc()  # Increment request counter
+    global individual_response_times
+
+    logger.info("Audio classification request received.")
+    REQUEST_COUNT.inc()
+
     start_time = time.time()
     try:
-        # Call the original classify_audio function
         result = classify_audio(model_type, feature_type, file_path)
         return result
     except Exception as e:
-        ERROR_COUNT.inc()  # Increment error counter
+        ERROR_COUNT.inc()
+        logger.error("Error during classification: %s", e)
         raise
     finally:
-        RESPONSE_TIME.observe(time.time() - start_time)  # Observe response time
+        response_time = time.time() - start_time
+        RESPONSE_TIME.observe(response_time)
+        individual_response_times.append(response_time)
+        logger.info("Request processed. Response time: %.3f seconds", response_time)
 
 def run():
     st.title("Respiratory Sound Classifier: Inference and Deployment")
@@ -328,9 +355,6 @@ def run():
                 os.remove(temp_file_path)
 
     # Tab 3: Metrics Dashboard
-    # Tab 3: Metrics Dashboard
-
-
     with tab3:
         st.subheader("Metrics Dashboard")
         st.markdown("""
@@ -338,66 +362,26 @@ def run():
         and error counts. These metrics are tracked internally and updated in real-time.
         """)
 
-        # Real-time metrics visualization
         col1, col2, col3 = st.columns(3)
+        col1.metric("Total Requests", REQUEST_COUNT._value.get())
+        col2.metric("Total Errors", ERROR_COUNT._value.get())
 
-        # Display live metrics
-        with col1:
-            st.metric("Total Requests", REQUEST_COUNT._value.get())
-        with col2:
-            st.metric("Total Errors", ERROR_COUNT._value.get())
-        with col3:
-            # Calculate average response time
-            response_time_sum = RESPONSE_TIME._sum.get() if hasattr(RESPONSE_TIME, '_sum') else 0
-            response_time_count = RESPONSE_TIME._count.get() if hasattr(RESPONSE_TIME, '_count') else 0
-            avg_response_time = response_time_sum / response_time_count if response_time_count > 0 else 0
-            st.metric("Avg Response Time (s)", f"{avg_response_time:.3f}")
-
-        # Response Time Histogram Visualization
-        st.markdown("### Response Time Distribution")
-
-        if hasattr(RESPONSE_TIME, "_buckets"):
-            # Exclude the +Inf bucket
-            response_time_data = RESPONSE_TIME._buckets[:-1]  
-            response_time_labels = [f"<= {bucket}" for bucket in range(1, len(response_time_data)+1)]
-
-            # Create a DataFrame for bucket counts
-            response_time_df = pd.DataFrame({
-                "Time Range": response_time_labels,
-                "Request Count": response_time_data
-            })
-
-            # Set the time range as the index
-            response_time_df.set_index("Time Range", inplace=True)
-
-            # Display the bar chart
-            st.bar_chart(response_time_df)
-
-            # Show the response time sum and average if the data is available
-            st.markdown(f"**Total Response Time Sum**: {response_time_sum:.3f} seconds")
-            st.markdown(f"**Average Response Time**: {avg_response_time:.3f} seconds")
-
+        if individual_response_times:
+            avg_response_time = sum(individual_response_times) / len(individual_response_times)
         else:
-            st.warning("No response time data available for visualization.")
+            avg_response_time = 0
+        col3.metric("Avg Response Time (s)", f"{avg_response_time:.3f}")
 
-def save_uploaded_file(uploaded_file):
-    """Save the uploaded file temporarily."""
-    temp_file_path = os.path.join("temp_audio", uploaded_file.name)
-    os.makedirs("temp_audio", exist_ok=True)
-    with open(temp_file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    return temp_file_path
+        st.markdown("### Individual Response Times")
+        if individual_response_times:
+            df = pd.DataFrame({
+                "Request Index": range(1, len(individual_response_times) + 1),
+                "Response Time (s)": individual_response_times
+            })
+            st.dataframe(df)
+        else:
+            st.warning("No response time data available.")
 
-
-def display_results(predicted_class, probabilities, model_type):
-    """Display the classification results."""
-    class_label = CLASS_NAMES[model_type][predicted_class]
-    st.success(f"Classification Complete! Predicted Class: **{class_label}**")
-    st.write("### Prediction Probabilities")
-    class_probabilities = {
-        CLASS_NAMES[model_type][i]: prob for i, prob in enumerate(probabilities)
-    }
-    st.bar_chart(class_probabilities)
 
 
 if __name__ == "__main__":
