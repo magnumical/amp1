@@ -33,11 +33,13 @@ Download the ICBHI 2017 dataset and put it inside ```data`` folder in the main d
 ```
 Based on my data exploration, the dataset is highly imbalanced. Some categories (e.g., Asthma) have a handful of samples. Therefore, I aimed to do binary (Normal vs Abnormal) as well as multiclass (broader conditions like Normal, Chronic Respiratory Diseases, and Respiratory Infections).
 
+1. Running dataset exploration code:
+``` python Exploration/inference.py --diagnosis_file ./data//Respiratory_Sound_Database//patient_diagnosis.csv --audio_path ./data/Respiratory_Sound_Database/testsample```
 
 ## Training model
 As I earlier said, I tried to explore different options in model/system design of a such a project. Therefore, ```Train.py``` script in the main directory contain different options that you can choose from.
 For example, you can do ```binary``` or ```multiclass``` classifications using 3 different types of input: 1. MFCC, 2. Log-Mel Spectrum, 3. MFCC with augmented features.
-
+* Note: you can skip this step since trained models are already in ```./models/``` directory.
 #### Model Training Workflow
 
 The training process involves:
@@ -92,7 +94,16 @@ This file will iterate over all models and will give you general overview of dif
 3. Use the [Hugging Face](https://huggingface.co/spaces/magnumical/amp) app to upload your audio file and see results!
 
 
+## Run UI locally + metrics collection
+To run the UI locally:
+```streamlit run app.py```
 
+now if you want to access to different logs via Prometheus:
+```prometheus --config.file=prometheus.yml```
+
+1. After running successfully, you can start your Grafana UI available at ```http://localhost:3000``` 
+2. From the sidebar, go to Data SourcesH (it should be under Connections)
+3. Here you can add Prometheus as a data source and add panels with queries to visualize metrics from Prometheus.
 
 
 
