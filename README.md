@@ -34,7 +34,7 @@ Download the ICBHI 2017 dataset and put it inside ```data`` folder in the main d
 Based on my data exploration, the dataset is highly imbalanced. Some categories (e.g., Asthma) have a handful of samples. Therefore, I aimed to do binary (Normal vs Abnormal) as well as multiclass (broader conditions like Normal, Chronic Respiratory Diseases, and Respiratory Infections).
 
 1. Running dataset exploration code:
-``` python Exploration/inference.py --diagnosis_file './data//Respiratory_Sound_Database//patient_diagnosis.csv --audio_path ./data/Respiratory_Sound_Database/testsample```
+``` python Exploration/inference.py --diagnosis_file ./data//Respiratory_Sound_Database//patient_diagnosis.csv --audio_path ./data/Respiratory_Sound_Database/testsample```
 
 ## Training model
 As I earlier said, I tried to explore different options in model/system design of a such a project. Therefore, ```Train.py``` script in the main directory contain different options that you can choose from.
