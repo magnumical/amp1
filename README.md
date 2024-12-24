@@ -37,7 +37,7 @@ Based on my data exploration, the dataset is highly imbalanced. Some categories 
 ## Training model
 As I earlier said, I tried to explore different options in model/system design of a such a project. Therefore, ```Train.py``` script in the main directory contain different options that you can choose from.
 For example, you can do ```binary``` or ```multiclass``` classifications using 3 different types of input: 1. MFCC, 2. Log-Mel Spectrum, 3. MFCC with augmented features.
-
+* Note: you can skip this step since trained models are already in ```./models/``` directory.
 #### Model Training Workflow
 
 The training process involves:
