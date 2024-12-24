@@ -1,6 +1,5 @@
 /data/Respiratory_Sound_Database/audio_and_txt_files
 /KaggleRuns
-/data
 /models/archive
 /huggingface
 /processed_datasets/old
