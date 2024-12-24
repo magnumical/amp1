@@ -109,4 +109,74 @@ now if you want to access to different logs via Prometheus:
 
 
 
+## Directory and files
+```
+Main Directory
+│   .gitignore   #ignores some directories while pushing on git
+│   app.py    #main streamlit UI for deployment
+│   Model_Inference.py   #testing model
+│   prometheus.yml    #settings to run prometheus
+│   README.md        #readme
+│   requirements.txt   # reqs to run codes
+│   TestModels.py   #tesing models
+│   Train.py   #runnig workflow and training models
+│
+├───.github
+│   └───workflows
+│           cicd.yaml   # for github actions
+├───data
+│   │   demographic_info.txt
+│   ├───Respiratory_Sound_Database
+│   │   │   filename_differences.txt
+│   │   │   filename_format.txt
+│   │   │   patient_diagnosis.csv
+│   │   │
+│   │   └───testsample                #sample audio files
+│   │           215_1b3_Tc_sc_Meditron.txt
+│   │           215_1b3_Tc_sc_Meditron.wav
+│   │           patient_diagnosis.csv
+│   │           ....     
+├───Exploration
+│   │   inference.py    # data exploration
+│   │
+│   ├───LegacyTraining   #codes for training in single file --> for Kaggle 
+│   │       train.py
+│   │
+│───│───models   #final trained models
+│   │       final_model_binary_augmented.h5
+│   │       final_model_binary_log_mel.h5
+│   │       ....
+│   │
+│───│───processed_datasets      #unseen test samples to evaluate models
+│   │       X_test_binary_augmented.npy
+│   │       X_test_binary_log_mel.npy
+│   │       X_test_binary_mfcc.npy
+│   │       ....
+│   │
+│───│───streamlit_ui      #different components of ui
+│   │   │   data_exploration.py    #for second page, to explore data
+│   │   │   model_deployment.py
+│   │   │   model_evaluation_summary.csv
+│   │   │   model_performance.py
+│   │   │   readme.py   # first anding page
+│   │   │   style.css   
+│   │   │
+│   │   ├───img
+│   │   │       deployment.png
+│   │   │       logo.png
+│   │   │       training.png
+│   │
+│───│───utils    #utility functions for training
+│   │   │   audioprocessing.py
+│   │   │   augmentation.py
+│   │   │   data_loader.py
+│   │   │   evaluation.py
+│   │   │   model_utils.py
+│   │
+│───│───src #includes extra images and a pdf file
+│   │
+│   │
+
+```
+
    
