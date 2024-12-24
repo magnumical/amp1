@@ -92,7 +92,16 @@ This file will iterate over all models and will give you general overview of dif
 3. Use the [Hugging Face](https://huggingface.co/spaces/magnumical/amp) app to upload your audio file and see results!
 
 
+## Run UI locally + metrics collection
+To run the UI locally:
+```streamlit run app.py```
 
+now if you want to access to different logs via Prometheus:
+```prometheus --config.file=prometheus.yml```
+
+1. After running successfully, you can start your Grafana UI available at ```http://localhost:3000``` 
+2. From the sidebar, go to Data SourcesH (it should be under Connections)
+3. Here you can add Prometheus as a data source and add panels with queries to visualize metrics from Prometheus.
 
 
 
