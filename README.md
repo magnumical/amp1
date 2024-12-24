@@ -89,7 +89,7 @@ this script automatically matches .npy files with .h5 models and makes the final
    a) you can run ```python Model_Inference.py```:
    * for example: 
 ```
-Model_Inference.py --audio_file ./data/Respiratory_Sound_Database/testsample/157_1b1_Al_sc_Meditron.wav
+Model_Inference.py ./data/Respiratory_Sound_Database/testsample/157_1b1_Al_sc_Meditron.wav
 ```
 This file will iterate over all models and will give you general overview of different model performance.
 
