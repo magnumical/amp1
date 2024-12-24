@@ -1,10 +1,12 @@
 # Overview and Envisioned Workflow
 This project focuses on developing a pipeline to classify respiratory sounds into diagnostic categories using the ICBHI 2017 dataset. The pipeline involves data preprocessing, feature extraction, model training, and evaluation. It supports binary and multi-class classification tasks. 
-Please check out the instructions [PDF](link-to-pdf) or deployed web-app ([Hugging Face](https://huggingface.co/spaces/magnumical/amp)) for more descriptive info.
+Please check out the instructions ([PDF](https://github.com/magnumical/amp1/blob/main/src/AmpH_Report.pdf)) or deployed web-app ([Hugging Face](https://huggingface.co/spaces/magnumical/amp)) for more descriptive info.
 
 * Since there was only a short amount of time, I tried to mimic how I would approach such a classification problem. Therefore, I created a workflow that tests different options, from data processing to model architecture, to determine the best-performing model.
 
 * You can also checkout ([gitHub actions]([https://huggingface.co/spaces/magnumical/amp](https://github.com/magnumical/amp1/actions))) to view a limited implementation of CI/CD pipeline.
+
+<img src="https://github.com/magnumical/amp1/blob/main/src/deployment.png" alt="Deployment Workflow" width="65%">
 
 ## Environment Setup Instructions
 
