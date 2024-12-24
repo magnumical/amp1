@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/29acf2b21e7d4052aaae454691dc0121/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 29acf2b21e7d4052aaae454691dc0121
+run_name: wistful-yak-823
+run_uuid: 29acf2b21e7d4052aaae454691dc0121
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1735009117113
+status: 1
+tags: []
+user_id: rezaa
