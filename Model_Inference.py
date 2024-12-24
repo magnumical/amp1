@@ -6,14 +6,16 @@ from sklearn.preprocessing import normalize
 from tensorflow.keras.models import load_model
 from scipy.signal import butter, sosfilt
 import pandas as pd
+import argparse
 
 # Set up logging
+DEFAULT_FILE_PATH  = "./data/Respiratory_Sound_Database/testsample/101_1b1_Al_sc_Meditron.wav"
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("audio_classifier_test")
 
 # Paths and Constants
 MODEL_PATH = "./models"
-FILE_PATH = "./data/Respiratory_Sound_Database/testsample/101_1b1_Al_sc_Meditron.wav"
 MODELS = {
     "binary": {
         "augmented": "final_model_binary_augmented.h5",
@@ -187,6 +189,18 @@ def classify_audio(model_type, feature_type, file_path):
 def main():
     logger.info("Starting audio classification test script.")
 
+    # Argument parsing
+    parser = argparse.ArgumentParser(description="Classify an audio file.")
+    parser.add_argument(
+        "audio_file",
+        type=str,
+        nargs="?", 
+        default=DEFAULT_FILE_PATH,  # Default to the predefined path
+        help="Path to the audio file (default is the predefined path)"
+    )
+    args = parser.parse_args()
+
+    FILE_PATH = args.audio_file
     if not os.path.exists(FILE_PATH):
         logger.error(f"Audio file not found: {FILE_PATH}")
         return
@@ -221,6 +235,7 @@ def main():
     df_results = pd.DataFrame(results)
     print("\nSummary of Results:")
     print(df_results.to_string(index=False))
+
 
 if __name__ == "__main__":
     main()

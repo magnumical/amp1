@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/a3230f47c62f4e0596c5afaa094afcd7/artifacts
+end_time: 1734962828423
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a3230f47c62f4e0596c5afaa094afcd7
+run_name: bright-shad-586
+run_uuid: a3230f47c62f4e0596c5afaa094afcd7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962817871
+status: 3
+tags: []
+user_id: root

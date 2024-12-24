@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/69e0527a45b8490f82b51b8be7f86f4d/artifacts
+end_time: 1734962937584
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 69e0527a45b8490f82b51b8be7f86f4d
+run_name: upset-dog-858
+run_uuid: 69e0527a45b8490f82b51b8be7f86f4d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962929052
+status: 3
+tags: []
+user_id: root

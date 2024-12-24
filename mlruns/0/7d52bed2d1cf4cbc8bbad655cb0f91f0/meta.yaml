@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/7d52bed2d1cf4cbc8bbad655cb0f91f0/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 7d52bed2d1cf4cbc8bbad655cb0f91f0
+run_name: nimble-penguin-279
+run_uuid: 7d52bed2d1cf4cbc8bbad655cb0f91f0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734994161122
+status: 1
+tags: []
+user_id: rezaa

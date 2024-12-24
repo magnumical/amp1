@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/5c81af861c5c45d684233cfc8f4f8741/artifacts
+end_time: 1734963099315
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5c81af861c5c45d684233cfc8f4f8741
+run_name: suave-ram-43
+run_uuid: 5c81af861c5c45d684233cfc8f4f8741
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963091626
+status: 3
+tags: []
+user_id: root

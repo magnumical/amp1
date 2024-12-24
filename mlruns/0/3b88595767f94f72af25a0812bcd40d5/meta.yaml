@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/3b88595767f94f72af25a0812bcd40d5/artifacts
+end_time: 1734962580395
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3b88595767f94f72af25a0812bcd40d5
+run_name: worried-hawk-729
+run_uuid: 3b88595767f94f72af25a0812bcd40d5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962574460
+status: 3
+tags: []
+user_id: root

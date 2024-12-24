@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/2bb15ef1e83a458282337fe93a797925/artifacts
+end_time: 1734993999281
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 2bb15ef1e83a458282337fe93a797925
+run_name: thoughtful-cat-493
+run_uuid: 2bb15ef1e83a458282337fe93a797925
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734993919660
+status: 3
+tags: []
+user_id: rezaa

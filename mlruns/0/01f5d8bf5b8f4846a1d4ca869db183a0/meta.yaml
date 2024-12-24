@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/01f5d8bf5b8f4846a1d4ca869db183a0/artifacts
+end_time: 1734991412813
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 01f5d8bf5b8f4846a1d4ca869db183a0
+run_name: serious-boar-753
+run_uuid: 01f5d8bf5b8f4846a1d4ca869db183a0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734991412059
+status: 3
+tags: []
+user_id: rezaa

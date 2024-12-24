@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/8a5f50dcc5ac47279edcbb10017a4b30/artifacts
+end_time: 1734962587687
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 8a5f50dcc5ac47279edcbb10017a4b30
+run_name: angry-stork-559
+run_uuid: 8a5f50dcc5ac47279edcbb10017a4b30
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962580401
+status: 3
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/89ef40c9d25840cf86b329b9486aec78/artifacts
+end_time: 1734963066541
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 89ef40c9d25840cf86b329b9486aec78
+run_name: ambitious-moose-436
+run_uuid: 89ef40c9d25840cf86b329b9486aec78
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963056695
+status: 3
+tags: []
+user_id: root

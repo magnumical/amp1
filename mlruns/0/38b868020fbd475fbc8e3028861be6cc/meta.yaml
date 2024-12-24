@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/38b868020fbd475fbc8e3028861be6cc/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 38b868020fbd475fbc8e3028861be6cc
+run_name: calm-goose-555
+run_uuid: 38b868020fbd475fbc8e3028861be6cc
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962294284
+status: 1
+tags: []
+user_id: root

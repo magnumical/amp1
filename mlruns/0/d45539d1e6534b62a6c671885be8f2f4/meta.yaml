@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/d45539d1e6534b62a6c671885be8f2f4/artifacts
+end_time: 1734962788076
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d45539d1e6534b62a6c671885be8f2f4
+run_name: enthused-dog-564
+run_uuid: d45539d1e6534b62a6c671885be8f2f4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962782026
+status: 3
+tags: []
+user_id: root

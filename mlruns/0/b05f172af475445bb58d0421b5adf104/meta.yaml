@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/b05f172af475445bb58d0421b5adf104/artifacts
+end_time: 1734993590395
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: b05f172af475445bb58d0421b5adf104
+run_name: respected-skunk-769
+run_uuid: b05f172af475445bb58d0421b5adf104
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734993541360
+status: 3
+tags: []
+user_id: rezaa

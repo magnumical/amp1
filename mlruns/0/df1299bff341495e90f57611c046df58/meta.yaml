@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/df1299bff341495e90f57611c046df58/artifacts
+end_time: 1734962756631
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: df1299bff341495e90f57611c046df58
+run_name: whimsical-skunk-72
+run_uuid: df1299bff341495e90f57611c046df58
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962750185
+status: 3
+tags: []
+user_id: root

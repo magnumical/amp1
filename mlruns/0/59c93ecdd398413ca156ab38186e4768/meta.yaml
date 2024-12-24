@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/59c93ecdd398413ca156ab38186e4768/artifacts
+end_time: 1734962494671
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 59c93ecdd398413ca156ab38186e4768
+run_name: polite-smelt-522
+run_uuid: 59c93ecdd398413ca156ab38186e4768
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962488145
+status: 3
+tags: []
+user_id: root

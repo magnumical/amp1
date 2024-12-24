@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/ecdfe53bb0944e56a7d9b5f3c0bdab54/artifacts
+end_time: 1734962316873
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ecdfe53bb0944e56a7d9b5f3c0bdab54
+run_name: abrasive-sow-552
+run_uuid: ecdfe53bb0944e56a7d9b5f3c0bdab54
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962309737
+status: 3
+tags: []
+user_id: root

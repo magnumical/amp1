@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/8107fad205de49f0adcc087dcfb43b58/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 8107fad205de49f0adcc087dcfb43b58
+run_name: ambitious-conch-960
+run_uuid: 8107fad205de49f0adcc087dcfb43b58
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734978862149
+status: 1
+tags: []
+user_id: rezaa

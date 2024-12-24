@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/bb8ccba66e524dfbafe09642079b0109/artifacts
+end_time: 1734962345930
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: bb8ccba66e524dfbafe09642079b0109
+run_name: incongruous-cub-349
+run_uuid: bb8ccba66e524dfbafe09642079b0109
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962341052
+status: 3
+tags: []
+user_id: root

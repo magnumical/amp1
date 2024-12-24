@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/31f85b0cb3d544c18a3a7d2345f4278b/artifacts
+end_time: 1734962631494
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 31f85b0cb3d544c18a3a7d2345f4278b
+run_name: debonair-vole-459
+run_uuid: 31f85b0cb3d544c18a3a7d2345f4278b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962627625
+status: 3
+tags: []
+user_id: root

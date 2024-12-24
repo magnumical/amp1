@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/9be14ef7d5404f45b51b603866a84bea/artifacts
+end_time: 1734962725819
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9be14ef7d5404f45b51b603866a84bea
+run_name: casual-ram-25
+run_uuid: 9be14ef7d5404f45b51b603866a84bea
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962719378
+status: 3
+tags: []
+user_id: root

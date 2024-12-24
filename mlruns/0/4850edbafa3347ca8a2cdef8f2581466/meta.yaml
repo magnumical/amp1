@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/4850edbafa3347ca8a2cdef8f2581466/artifacts
+end_time: 1734962407541
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4850edbafa3347ca8a2cdef8f2581466
+run_name: selective-mole-429
+run_uuid: 4850edbafa3347ca8a2cdef8f2581466
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962396384
+status: 3
+tags: []
+user_id: root

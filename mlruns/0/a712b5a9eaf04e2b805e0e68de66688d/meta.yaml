@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/a712b5a9eaf04e2b805e0e68de66688d/artifacts
+end_time: 1734962472952
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a712b5a9eaf04e2b805e0e68de66688d
+run_name: beautiful-ram-308
+run_uuid: a712b5a9eaf04e2b805e0e68de66688d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962466785
+status: 3
+tags: []
+user_id: root

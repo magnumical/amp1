@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/8ca1e60d32d640b1ba598bfb02d4307d/artifacts
+end_time: 1734962550799
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 8ca1e60d32d640b1ba598bfb02d4307d
+run_name: colorful-wolf-279
+run_uuid: 8ca1e60d32d640b1ba598bfb02d4307d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962542907
+status: 3
+tags: []
+user_id: root

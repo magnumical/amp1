@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/4c25f8a1ae9e49b0af7e21dc19c42c20/artifacts
+end_time: 1734962871007
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4c25f8a1ae9e49b0af7e21dc19c42c20
+run_name: languid-whale-953
+run_uuid: 4c25f8a1ae9e49b0af7e21dc19c42c20
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962859910
+status: 3
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/00d37b7d06404e5bb0267c899e0db493/artifacts
+end_time: 1734962835507
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 00d37b7d06404e5bb0267c899e0db493
+run_name: worried-lark-819
+run_uuid: 00d37b7d06404e5bb0267c899e0db493
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962828429
+status: 3
+tags: []
+user_id: root

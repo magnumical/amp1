@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/9048b2b1aa5d43b285c3f41517f8ada5/artifacts
+end_time: 1734992142371
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9048b2b1aa5d43b285c3f41517f8ada5
+run_name: nervous-asp-741
+run_uuid: 9048b2b1aa5d43b285c3f41517f8ada5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734992077440
+status: 3
+tags: []
+user_id: rezaa

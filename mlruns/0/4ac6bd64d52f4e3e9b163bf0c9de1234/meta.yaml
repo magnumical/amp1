@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/4ac6bd64d52f4e3e9b163bf0c9de1234/artifacts
+end_time: 1734963129852
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4ac6bd64d52f4e3e9b163bf0c9de1234
+run_name: gaudy-dolphin-813
+run_uuid: 4ac6bd64d52f4e3e9b163bf0c9de1234
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963123490
+status: 3
+tags: []
+user_id: root

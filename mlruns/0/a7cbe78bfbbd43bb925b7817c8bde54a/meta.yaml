@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/a7cbe78bfbbd43bb925b7817c8bde54a/artifacts
+end_time: 1734977524781
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a7cbe78bfbbd43bb925b7817c8bde54a
+run_name: funny-loon-926
+run_uuid: a7cbe78bfbbd43bb925b7817c8bde54a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734977524721
+status: 4
+tags: []
+user_id: rezaa

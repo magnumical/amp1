@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/3c1049698afb4b0b9484a540750bd395/artifacts
+end_time: 1734962378409
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3c1049698afb4b0b9484a540750bd395
+run_name: rare-bee-537
+run_uuid: 3c1049698afb4b0b9484a540750bd395
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962371298
+status: 3
+tags: []
+user_id: root

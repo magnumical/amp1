@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/8539235b93ed4fffa9e0ea763095ff52/artifacts
+end_time: 1734963147441
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 8539235b93ed4fffa9e0ea763095ff52
+run_name: learned-fowl-386
+run_uuid: 8539235b93ed4fffa9e0ea763095ff52
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963142256
+status: 3
+tags: []
+user_id: root

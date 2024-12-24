@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/7c9529e5b1a2480ba0c36a4edd290417/artifacts
+end_time: 1734962330130
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 7c9529e5b1a2480ba0c36a4edd290417
+run_name: abrasive-sloth-352
+run_uuid: 7c9529e5b1a2480ba0c36a4edd290417
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962324497
+status: 3
+tags: []
+user_id: root

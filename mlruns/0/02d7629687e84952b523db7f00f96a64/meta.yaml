@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/02d7629687e84952b523db7f00f96a64/artifacts
+end_time: 1734962807666
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 02d7629687e84952b523db7f00f96a64
+run_name: learned-duck-779
+run_uuid: 02d7629687e84952b523db7f00f96a64
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962801449
+status: 3
+tags: []
+user_id: root

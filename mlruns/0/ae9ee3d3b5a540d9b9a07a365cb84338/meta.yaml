@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/ae9ee3d3b5a540d9b9a07a365cb84338/artifacts
+end_time: 1734962714216
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ae9ee3d3b5a540d9b9a07a365cb84338
+run_name: traveling-dog-459
+run_uuid: ae9ee3d3b5a540d9b9a07a365cb84338
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962709045
+status: 3
+tags: []
+user_id: root

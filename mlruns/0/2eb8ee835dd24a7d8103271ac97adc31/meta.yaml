@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/2eb8ee835dd24a7d8103271ac97adc31/artifacts
+end_time: 1734993541343
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 2eb8ee835dd24a7d8103271ac97adc31
+run_name: grandiose-worm-122
+run_uuid: 2eb8ee835dd24a7d8103271ac97adc31
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734993468896
+status: 3
+tags: []
+user_id: rezaa

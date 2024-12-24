@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/81d3f0a3ff56493fb174b501a41113c1/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 81d3f0a3ff56493fb174b501a41113c1
+run_name: orderly-yak-968
+run_uuid: 81d3f0a3ff56493fb174b501a41113c1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734992954914
+status: 1
+tags: []
+user_id: rezaa

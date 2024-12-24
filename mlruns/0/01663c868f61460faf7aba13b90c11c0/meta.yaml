@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/01663c868f61460faf7aba13b90c11c0/artifacts
+end_time: 1734962641766
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 01663c868f61460faf7aba13b90c11c0
+run_name: thoughtful-pug-215
+run_uuid: 01663c868f61460faf7aba13b90c11c0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962636772
+status: 3
+tags: []
+user_id: root

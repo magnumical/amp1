@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/fb4b383a8516493cbc6c63c6bf91113e/artifacts
+end_time: 1734963033606
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: fb4b383a8516493cbc6c63c6bf91113e
+run_name: ambitious-donkey-922
+run_uuid: fb4b383a8516493cbc6c63c6bf91113e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963026491
+status: 3
+tags: []
+user_id: root

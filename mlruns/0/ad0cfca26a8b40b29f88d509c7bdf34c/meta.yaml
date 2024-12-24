@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/ad0cfca26a8b40b29f88d509c7bdf34c/artifacts
+end_time: 1734993293593
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ad0cfca26a8b40b29f88d509c7bdf34c
+run_name: abrasive-worm-839
+run_uuid: ad0cfca26a8b40b29f88d509c7bdf34c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734993162263
+status: 3
+tags: []
+user_id: rezaa

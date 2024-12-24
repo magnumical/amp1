@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/1843ceb259ab4914afca41cd13e63721/artifacts
+end_time: 1734962521425
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 1843ceb259ab4914afca41cd13e63721
+run_name: learned-foal-259
+run_uuid: 1843ceb259ab4914afca41cd13e63721
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962516646
+status: 3
+tags: []
+user_id: root

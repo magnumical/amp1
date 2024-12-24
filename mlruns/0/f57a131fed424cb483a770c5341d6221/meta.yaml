@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/f57a131fed424cb483a770c5341d6221/artifacts
+end_time: 1734963074387
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f57a131fed424cb483a770c5341d6221
+run_name: unruly-fawn-165
+run_uuid: f57a131fed424cb483a770c5341d6221
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963066546
+status: 3
+tags: []
+user_id: root

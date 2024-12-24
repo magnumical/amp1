@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/375fae0d9f6246f5be032f284968712a/artifacts
+end_time: 1734963091621
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 375fae0d9f6246f5be032f284968712a
+run_name: spiffy-slug-210
+run_uuid: 375fae0d9f6246f5be032f284968712a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963081068
+status: 3
+tags: []
+user_id: root

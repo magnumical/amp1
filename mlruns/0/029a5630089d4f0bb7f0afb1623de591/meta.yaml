@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/029a5630089d4f0bb7f0afb1623de591/artifacts
+end_time: 1734962654286
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 029a5630089d4f0bb7f0afb1623de591
+run_name: dapper-eel-330
+run_uuid: 029a5630089d4f0bb7f0afb1623de591
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962647974
+status: 3
+tags: []
+user_id: root

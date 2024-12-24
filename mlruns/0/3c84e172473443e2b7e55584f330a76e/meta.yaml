@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/3c84e172473443e2b7e55584f330a76e/artifacts
+end_time: 1734963210796
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3c84e172473443e2b7e55584f330a76e
+run_name: victorious-snail-848
+run_uuid: 3c84e172473443e2b7e55584f330a76e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963204640
+status: 3
+tags: []
+user_id: root

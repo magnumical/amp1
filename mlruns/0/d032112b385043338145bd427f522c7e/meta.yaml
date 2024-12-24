@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/d032112b385043338145bd427f522c7e/artifacts
+end_time: 1734977294686
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d032112b385043338145bd427f522c7e
+run_name: illustrious-loon-505
+run_uuid: d032112b385043338145bd427f522c7e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734977294594
+status: 4
+tags: []
+user_id: rezaa

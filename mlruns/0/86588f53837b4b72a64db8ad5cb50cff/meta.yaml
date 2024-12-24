@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/86588f53837b4b72a64db8ad5cb50cff/artifacts
+end_time: 1734962801443
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 86588f53837b4b72a64db8ad5cb50cff
+run_name: ambitious-grouse-321
+run_uuid: 86588f53837b4b72a64db8ad5cb50cff
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962788081
+status: 3
+tags: []
+user_id: root

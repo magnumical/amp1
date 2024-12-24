@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/d0a400f632524ded9ee33f421d8460dd/artifacts
+end_time: 1734962488140
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d0a400f632524ded9ee33f421d8460dd
+run_name: colorful-newt-151
+run_uuid: d0a400f632524ded9ee33f421d8460dd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962483261
+status: 3
+tags: []
+user_id: root

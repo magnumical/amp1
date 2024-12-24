@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/e3a1d15c0b0946668e8639a3be63425e/artifacts
+end_time: 1734962304733
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: e3a1d15c0b0946668e8639a3be63425e
+run_name: bright-fox-732
+run_uuid: e3a1d15c0b0946668e8639a3be63425e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962294466
+status: 3
+tags: []
+user_id: root

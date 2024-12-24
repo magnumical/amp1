@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/235eb5ff4af745bd9efdca36d1f6af35/artifacts
+end_time: 1734962542902
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 235eb5ff4af745bd9efdca36d1f6af35
+run_name: learned-shrike-199
+run_uuid: 235eb5ff4af745bd9efdca36d1f6af35
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962534409
+status: 3
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/7504ee093d0e4798b2bd6ed134bc4c60/artifacts
+end_time: 1734962567839
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 7504ee093d0e4798b2bd6ed134bc4c60
+run_name: persistent-whale-267
+run_uuid: 7504ee093d0e4798b2bd6ed134bc4c60
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962562160
+status: 3
+tags: []
+user_id: root

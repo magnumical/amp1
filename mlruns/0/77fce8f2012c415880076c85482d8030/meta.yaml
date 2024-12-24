@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/77fce8f2012c415880076c85482d8030/artifacts
+end_time: 1734962897491
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 77fce8f2012c415880076c85482d8030
+run_name: peaceful-snail-579
+run_uuid: 77fce8f2012c415880076c85482d8030
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962892270
+status: 3
+tags: []
+user_id: root

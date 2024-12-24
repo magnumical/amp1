@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/fafaaac222f240d2b4c028145488a1cd/artifacts
+end_time: 1734962445633
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: fafaaac222f240d2b4c028145488a1cd
+run_name: smiling-skink-588
+run_uuid: fafaaac222f240d2b4c028145488a1cd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962433030
+status: 3
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/6fbea3be70f74ca38737a0fca58b9513/artifacts
+end_time: 1734962969329
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 6fbea3be70f74ca38737a0fca58b9513
+run_name: victorious-tern-887
+run_uuid: 6fbea3be70f74ca38737a0fca58b9513
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962961208
+status: 3
+tags: []
+user_id: root

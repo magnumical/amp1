@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/a6e99bed6201429f83611d064d0f4163/artifacts
+end_time: 1734992028353
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a6e99bed6201429f83611d064d0f4163
+run_name: merciful-smelt-7
+run_uuid: a6e99bed6201429f83611d064d0f4163
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734991945337
+status: 4
+tags: []
+user_id: rezaa

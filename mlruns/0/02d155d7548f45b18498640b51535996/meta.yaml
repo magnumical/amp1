@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/02d155d7548f45b18498640b51535996/artifacts
+end_time: 1734963184544
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 02d155d7548f45b18498640b51535996
+run_name: bedecked-eel-341
+run_uuid: 02d155d7548f45b18498640b51535996
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963178377
+status: 3
+tags: []
+user_id: root

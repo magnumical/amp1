@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/159a7c09786f40069baaabcea98d37ad/artifacts
+end_time: 1734962385975
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 159a7c09786f40069baaabcea98d37ad
+run_name: delicate-lamb-110
+run_uuid: 159a7c09786f40069baaabcea98d37ad
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962378415
+status: 3
+tags: []
+user_id: root

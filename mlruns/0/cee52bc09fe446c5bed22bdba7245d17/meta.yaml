@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/cee52bc09fe446c5bed22bdba7245d17/artifacts
+end_time: 1734963142251
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: cee52bc09fe446c5bed22bdba7245d17
+run_name: chill-goat-164
+run_uuid: cee52bc09fe446c5bed22bdba7245d17
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963136264
+status: 3
+tags: []
+user_id: root

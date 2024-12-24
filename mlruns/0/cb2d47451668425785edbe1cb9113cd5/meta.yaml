@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/cb2d47451668425785edbe1cb9113cd5/artifacts
+end_time: 1734991447893
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: cb2d47451668425785edbe1cb9113cd5
+run_name: placid-bird-3
+run_uuid: cb2d47451668425785edbe1cb9113cd5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734991447332
+status: 3
+tags: []
+user_id: rezaa

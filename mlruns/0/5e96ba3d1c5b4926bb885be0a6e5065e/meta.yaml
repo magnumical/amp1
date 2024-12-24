@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/5e96ba3d1c5b4926bb885be0a6e5065e/artifacts
+end_time: 1734992567434
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5e96ba3d1c5b4926bb885be0a6e5065e
+run_name: zealous-squirrel-847
+run_uuid: 5e96ba3d1c5b4926bb885be0a6e5065e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734992544879
+status: 3
+tags: []
+user_id: rezaa

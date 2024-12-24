@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/96b19b53e67a4db9894cf7bf2ad67ef5/artifacts
+end_time: 1734962859905
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 96b19b53e67a4db9894cf7bf2ad67ef5
+run_name: bustling-loon-51
+run_uuid: 96b19b53e67a4db9894cf7bf2ad67ef5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962849242
+status: 3
+tags: []
+user_id: root

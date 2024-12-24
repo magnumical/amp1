@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/997f00eec64b404e90884f6cbbfa5366/artifacts
+end_time: 1734963178371
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 997f00eec64b404e90884f6cbbfa5366
+run_name: upbeat-cub-197
+run_uuid: 997f00eec64b404e90884f6cbbfa5366
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963172426
+status: 3
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/ec737c429f534278a8b7fae9c79fd5da/artifacts
+end_time: 1734963231098
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ec737c429f534278a8b7fae9c79fd5da
+run_name: colorful-mouse-296
+run_uuid: ec737c429f534278a8b7fae9c79fd5da
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963222119
+status: 3
+tags: []
+user_id: root

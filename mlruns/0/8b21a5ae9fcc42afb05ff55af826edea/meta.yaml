@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/8b21a5ae9fcc42afb05ff55af826edea/artifacts
+end_time: 1734993162243
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 8b21a5ae9fcc42afb05ff55af826edea
+run_name: adaptable-lynx-445
+run_uuid: 8b21a5ae9fcc42afb05ff55af826edea
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734993082107
+status: 3
+tags: []
+user_id: rezaa

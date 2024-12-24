@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/6bb01a033b2f4ee6b6a1be136a3207cc/artifacts
+end_time: 1734963244108
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 6bb01a033b2f4ee6b6a1be136a3207cc
+run_name: learned-bug-716
+run_uuid: 6bb01a033b2f4ee6b6a1be136a3207cc
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963237662
+status: 3
+tags: []
+user_id: root

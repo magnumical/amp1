@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/012789a5b2a7473893da9ee865b7ab2f/artifacts
+end_time: 1734992028380
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 012789a5b2a7473893da9ee865b7ab2f
+run_name: thundering-gull-718
+run_uuid: 012789a5b2a7473893da9ee865b7ab2f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734991944824
+status: 3
+tags: []
+user_id: rezaa

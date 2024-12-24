@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/c44c7e7ca6f44675a8b5a2a118ff332f/artifacts
+end_time: 1734963056690
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c44c7e7ca6f44675a8b5a2a118ff332f
+run_name: indecisive-bird-62
+run_uuid: c44c7e7ca6f44675a8b5a2a118ff332f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963048290
+status: 3
+tags: []
+user_id: root

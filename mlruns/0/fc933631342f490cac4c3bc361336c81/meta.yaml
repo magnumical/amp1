@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/fc933631342f490cac4c3bc361336c81/artifacts
+end_time: 1734962647969
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: fc933631342f490cac4c3bc361336c81
+run_name: luminous-skink-44
+run_uuid: fc933631342f490cac4c3bc361336c81
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962641772
+status: 3
+tags: []
+user_id: root

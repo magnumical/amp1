@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/cfb7957f3d93424983fcd7a3ee1ab59b/artifacts
+end_time: 1734991447865
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: cfb7957f3d93424983fcd7a3ee1ab59b
+run_name: stately-sheep-886
+run_uuid: cfb7957f3d93424983fcd7a3ee1ab59b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734991447794
+status: 4
+tags: []
+user_id: rezaa

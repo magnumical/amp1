@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/566084bed8a948998df6c89074872007/artifacts
+end_time: 1734993743596
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 566084bed8a948998df6c89074872007
+run_name: luminous-snail-240
+run_uuid: 566084bed8a948998df6c89074872007
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734993666997
+status: 3
+tags: []
+user_id: rezaa

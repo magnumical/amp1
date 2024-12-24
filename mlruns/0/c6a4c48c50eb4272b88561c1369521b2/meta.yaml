@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/c6a4c48c50eb4272b88561c1369521b2/artifacts
+end_time: 1734962341047
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c6a4c48c50eb4272b88561c1369521b2
+run_name: classy-mule-386
+run_uuid: c6a4c48c50eb4272b88561c1369521b2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962335643
+status: 3
+tags: []
+user_id: root

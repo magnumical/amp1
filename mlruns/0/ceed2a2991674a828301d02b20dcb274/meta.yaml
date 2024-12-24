@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/ceed2a2991674a828301d02b20dcb274/artifacts
+end_time: 1734963194644
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ceed2a2991674a828301d02b20dcb274
+run_name: dazzling-ox-407
+run_uuid: ceed2a2991674a828301d02b20dcb274
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963190888
+status: 3
+tags: []
+user_id: root

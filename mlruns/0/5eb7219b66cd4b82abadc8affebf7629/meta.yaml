@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/5eb7219b66cd4b82abadc8affebf7629/artifacts
+end_time: 1734962556595
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5eb7219b66cd4b82abadc8affebf7629
+run_name: salty-crow-678
+run_uuid: 5eb7219b66cd4b82abadc8affebf7629
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962550806
+status: 3
+tags: []
+user_id: root

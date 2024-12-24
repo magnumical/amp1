@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/b1d2c4438edd42d7bb34a528f617e5ba/artifacts
+end_time: 1734990647190
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: b1d2c4438edd42d7bb34a528f617e5ba
+run_name: rumbling-hen-982
+run_uuid: b1d2c4438edd42d7bb34a528f617e5ba
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734990644203
+status: 3
+tags: []
+user_id: rezaa

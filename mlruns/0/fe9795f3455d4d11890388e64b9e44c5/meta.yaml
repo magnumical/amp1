@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/fe9795f3455d4d11890388e64b9e44c5/artifacts
+end_time: 1734962880358
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: fe9795f3455d4d11890388e64b9e44c5
+run_name: able-quail-876
+run_uuid: fe9795f3455d4d11890388e64b9e44c5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962871012
+status: 3
+tags: []
+user_id: root

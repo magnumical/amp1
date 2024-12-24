@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/9f0891bccbd64931a778e630e8023a3c/artifacts
+end_time: 1734992915101
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9f0891bccbd64931a778e630e8023a3c
+run_name: defiant-tern-289
+run_uuid: 9f0891bccbd64931a778e630e8023a3c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734992868163
+status: 3
+tags: []
+user_id: rezaa

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/e9fc9aa83b1e402882846c8b6f2d81e4/artifacts
+end_time: 1734962415250
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: e9fc9aa83b1e402882846c8b6f2d81e4
+run_name: youthful-newt-464
+run_uuid: e9fc9aa83b1e402882846c8b6f2d81e4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962407546
+status: 3
+tags: []
+user_id: root

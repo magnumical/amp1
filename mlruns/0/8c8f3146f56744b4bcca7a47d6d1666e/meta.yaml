@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/8c8f3146f56744b4bcca7a47d6d1666e/artifacts
+end_time: 1734963166106
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 8c8f3146f56744b4bcca7a47d6d1666e
+run_name: bustling-bug-572
+run_uuid: 8c8f3146f56744b4bcca7a47d6d1666e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963159934
+status: 3
+tags: []
+user_id: root

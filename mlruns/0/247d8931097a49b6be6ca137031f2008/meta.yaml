@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/247d8931097a49b6be6ca137031f2008/artifacts
+end_time: 1734962660079
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 247d8931097a49b6be6ca137031f2008
+run_name: glamorous-mole-139
+run_uuid: 247d8931097a49b6be6ca137031f2008
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962654291
+status: 3
+tags: []
+user_id: root

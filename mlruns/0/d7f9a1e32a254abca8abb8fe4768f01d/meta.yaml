@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/d7f9a1e32a254abca8abb8fe4768f01d/artifacts
+end_time: 1734993409029
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d7f9a1e32a254abca8abb8fe4768f01d
+run_name: efficient-conch-33
+run_uuid: d7f9a1e32a254abca8abb8fe4768f01d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734993293613
+status: 3
+tags: []
+user_id: rezaa

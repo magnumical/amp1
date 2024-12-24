@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/eb263596259b44918334180fe0a2edfc/artifacts
+end_time: 1734962396379
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: eb263596259b44918334180fe0a2edfc
+run_name: spiffy-eel-351
+run_uuid: eb263596259b44918334180fe0a2edfc
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962385980
+status: 3
+tags: []
+user_id: root

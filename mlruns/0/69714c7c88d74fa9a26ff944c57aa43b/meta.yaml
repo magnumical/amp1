@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/69714c7c88d74fa9a26ff944c57aa43b/artifacts
+end_time: 1734993082087
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 69714c7c88d74fa9a26ff944c57aa43b
+run_name: amazing-kite-315
+run_uuid: 69714c7c88d74fa9a26ff944c57aa43b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734992915110
+status: 3
+tags: []
+user_id: rezaa

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/5f68c7ae6caf4e709eb412057f9d41da/artifacts
+end_time: 1734993468890
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5f68c7ae6caf4e709eb412057f9d41da
+run_name: ambitious-sheep-274
+run_uuid: 5f68c7ae6caf4e709eb412057f9d41da
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734993409050
+status: 3
+tags: []
+user_id: rezaa

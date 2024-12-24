@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/be895e1bc5ee41688fd861994fb56a99/artifacts
+end_time: 1734962750179
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: be895e1bc5ee41688fd861994fb56a99
+run_name: rumbling-colt-413
+run_uuid: be895e1bc5ee41688fd861994fb56a99
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962743224
+status: 3
+tags: []
+user_id: root

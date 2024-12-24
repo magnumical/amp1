@@ -200,15 +200,9 @@ class RespiratorySoundAnalysis:
         y_normalized = y_compressed / np.max(np.abs(y_compressed))
         return y_normalized, target_sr
 
-# Entry point for standalone execution
-
-    #diagnosis_file = './data//Respiratory_Sound_Database//patient_diagnosis.csv'
-    #audio_path = './data/Respiratory_Sound_Database/testsample'
 
 
-
-# Entry point for standalone execution
-# python Exploration/inference.py --diagnosis_file './data//Respiratory_Sound_Database//patient_diagnosis.csv --audio_path ./data/Respiratory_Sound_Database/testsample
+# python Exploration/inference.py --diagnosis_file ./data//Respiratory_Sound_Database//patient_diagnosis.csv --audio_path ./data/Respiratory_Sound_Database/testsample
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run analysis on respiratory sound data.")

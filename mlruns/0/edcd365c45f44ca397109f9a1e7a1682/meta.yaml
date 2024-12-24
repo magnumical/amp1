@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/edcd365c45f44ca397109f9a1e7a1682/artifacts
+end_time: 1734962817866
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: edcd365c45f44ca397109f9a1e7a1682
+run_name: exultant-ant-140
+run_uuid: edcd365c45f44ca397109f9a1e7a1682
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962807671
+status: 3
+tags: []
+user_id: root

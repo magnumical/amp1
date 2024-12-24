@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/ec776bc215f649e2992271442e46b0b4/artifacts
+end_time: 1734962433024
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ec776bc215f649e2992271442e46b0b4
+run_name: auspicious-rook-653
+run_uuid: ec776bc215f649e2992271442e46b0b4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962427266
+status: 3
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/9d00642624f74734801bbe4d44c76760/artifacts
+end_time: 1734962562155
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9d00642624f74734801bbe4d44c76760
+run_name: gentle-shrike-63
+run_uuid: 9d00642624f74734801bbe4d44c76760
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962556601
+status: 3
+tags: []
+user_id: root

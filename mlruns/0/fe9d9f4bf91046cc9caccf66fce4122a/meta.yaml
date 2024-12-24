@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/fe9d9f4bf91046cc9caccf66fce4122a/artifacts
+end_time: 1734962427261
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: fe9d9f4bf91046cc9caccf66fce4122a
+run_name: puzzled-ray-557
+run_uuid: fe9d9f4bf91046cc9caccf66fce4122a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962415255
+status: 3
+tags: []
+user_id: root

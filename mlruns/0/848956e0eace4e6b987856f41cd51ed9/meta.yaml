@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/848956e0eace4e6b987856f41cd51ed9/artifacts
+end_time: 1734962842434
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 848956e0eace4e6b987856f41cd51ed9
+run_name: skittish-croc-421
+run_uuid: 848956e0eace4e6b987856f41cd51ed9
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962835512
+status: 3
+tags: []
+user_id: root

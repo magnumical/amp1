@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/f7a01b0cd31a4259a72aa13e2653bc32/artifacts
+end_time: 1734992849677
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f7a01b0cd31a4259a72aa13e2653bc32
+run_name: youthful-shrimp-96
+run_uuid: f7a01b0cd31a4259a72aa13e2653bc32
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734992823437
+status: 3
+tags: []
+user_id: rezaa

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/6478f9df23d5449dad260f0fa6fa3195/artifacts
+end_time: 1734992218300
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 6478f9df23d5449dad260f0fa6fa3195
+run_name: wise-stag-321
+run_uuid: 6478f9df23d5449dad260f0fa6fa3195
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734992160137
+status: 3
+tags: []
+user_id: rezaa

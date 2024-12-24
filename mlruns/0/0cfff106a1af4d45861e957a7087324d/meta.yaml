@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/0cfff106a1af4d45861e957a7087324d/artifacts
+end_time: 1734962309732
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 0cfff106a1af4d45861e957a7087324d
+run_name: sassy-stag-151
+run_uuid: 0cfff106a1af4d45861e957a7087324d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962304739
+status: 3
+tags: []
+user_id: root

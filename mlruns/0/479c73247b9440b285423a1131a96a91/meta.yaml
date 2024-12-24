@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/479c73247b9440b285423a1131a96a91/artifacts
+end_time: 1734963215841
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 479c73247b9440b285423a1131a96a91
+run_name: delightful-toad-148
+run_uuid: 479c73247b9440b285423a1131a96a91
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963210803
+status: 3
+tags: []
+user_id: root

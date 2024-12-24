@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/abef266eae634daaaeeb1a858ca10f86/artifacts
+end_time: 1734962975282
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: abef266eae634daaaeeb1a858ca10f86
+run_name: hilarious-bug-774
+run_uuid: abef266eae634daaaeeb1a858ca10f86
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962969334
+status: 3
+tags: []
+user_id: root

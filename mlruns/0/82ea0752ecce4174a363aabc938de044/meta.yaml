@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/82ea0752ecce4174a363aabc938de044/artifacts
+end_time: 1734992868153
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 82ea0752ecce4174a363aabc938de044
+run_name: colorful-auk-487
+run_uuid: 82ea0752ecce4174a363aabc938de044
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734992849689
+status: 3
+tags: []
+user_id: rezaa

@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/271b5d1325044def9d43d5a4e346be92/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 271b5d1325044def9d43d5a4e346be92
+run_name: worried-dog-16
+run_uuid: 271b5d1325044def9d43d5a4e346be92
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734992076946
+status: 1
+tags: []
+user_id: rezaa

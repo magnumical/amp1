@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/de13413dcc4a4c7a9314d6d3a6e53441/artifacts
+end_time: 1734962945789
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: de13413dcc4a4c7a9314d6d3a6e53441
+run_name: adventurous-croc-802
+run_uuid: de13413dcc4a4c7a9314d6d3a6e53441
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962937590
+status: 3
+tags: []
+user_id: root

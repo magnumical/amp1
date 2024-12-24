@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/31c155820330460e86e5b380e3ec8c0e/artifacts
+end_time: 1734962351529
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 31c155820330460e86e5b380e3ec8c0e
+run_name: nimble-bird-644
+run_uuid: 31c155820330460e86e5b380e3ec8c0e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962345935
+status: 3
+tags: []
+user_id: root

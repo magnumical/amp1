@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/d4521eef0c3d422aad06fc8df76f0ec5/artifacts
+end_time: 1734962627619
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d4521eef0c3d422aad06fc8df76f0ec5
+run_name: nimble-sponge-480
+run_uuid: d4521eef0c3d422aad06fc8df76f0ec5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962622134
+status: 3
+tags: []
+user_id: root

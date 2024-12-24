@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/f37e797b303343268ae3c3940430e0c2/artifacts
+end_time: 1734963159927
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f37e797b303343268ae3c3940430e0c2
+run_name: charming-calf-435
+run_uuid: f37e797b303343268ae3c3940430e0c2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963153695
+status: 3
+tags: []
+user_id: root

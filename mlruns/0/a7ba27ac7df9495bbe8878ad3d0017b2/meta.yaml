@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/a7ba27ac7df9495bbe8878ad3d0017b2/artifacts
+end_time: 1734962615932
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a7ba27ac7df9495bbe8878ad3d0017b2
+run_name: marvelous-crab-6
+run_uuid: a7ba27ac7df9495bbe8878ad3d0017b2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962608455
+status: 3
+tags: []
+user_id: root

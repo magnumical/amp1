@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/7b70411d6138481792b25d7881a10ef8/artifacts
+end_time: 1734963204634
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 7b70411d6138481792b25d7881a10ef8
+run_name: mercurial-hare-175
+run_uuid: 7b70411d6138481792b25d7881a10ef8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963200990
+status: 3
+tags: []
+user_id: root

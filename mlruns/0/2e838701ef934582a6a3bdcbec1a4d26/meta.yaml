@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/2e838701ef934582a6a3bdcbec1a4d26/artifacts
+end_time: 1734963026486
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 2e838701ef934582a6a3bdcbec1a4d26
+run_name: glamorous-slug-277
+run_uuid: 2e838701ef934582a6a3bdcbec1a4d26
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734963015506
+status: 3
+tags: []
+user_id: root

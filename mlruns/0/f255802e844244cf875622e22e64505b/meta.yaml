@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/f255802e844244cf875622e22e64505b/artifacts
+end_time: 1734962961203
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f255802e844244cf875622e22e64505b
+run_name: thoughtful-swan-171
+run_uuid: f255802e844244cf875622e22e64505b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962953541
+status: 3
+tags: []
+user_id: root

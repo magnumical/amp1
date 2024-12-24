@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/2098fd47e7f44386b3198de77fa3701a/artifacts
+end_time: 1734993666987
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 2098fd47e7f44386b3198de77fa3701a
+run_name: righteous-mouse-641
+run_uuid: 2098fd47e7f44386b3198de77fa3701a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734993590411
+status: 3
+tags: []
+user_id: rezaa

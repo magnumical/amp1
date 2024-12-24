@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/b8eca6a8929e4c70b594b99b8a1a0819/artifacts
+end_time: 1734962985757
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: b8eca6a8929e4c70b594b99b8a1a0819
+run_name: nosy-robin-577
+run_uuid: b8eca6a8929e4c70b594b99b8a1a0819
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962975287
+status: 3
+tags: []
+user_id: root

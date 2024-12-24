@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/daf7fa2f5cd646d98df42081ec48d2df/artifacts
+end_time: 1734962774930
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: daf7fa2f5cd646d98df42081ec48d2df
+run_name: carefree-koi-129
+run_uuid: daf7fa2f5cd646d98df42081ec48d2df
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962764726
+status: 3
+tags: []
+user_id: root

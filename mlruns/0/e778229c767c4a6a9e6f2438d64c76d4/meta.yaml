@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/e778229c767c4a6a9e6f2438d64c76d4/artifacts
+end_time: 1734962953536
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: e778229c767c4a6a9e6f2438d64c76d4
+run_name: adorable-cub-688
+run_uuid: e778229c767c4a6a9e6f2438d64c76d4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734962945797
+status: 3
+tags: []
+user_id: root

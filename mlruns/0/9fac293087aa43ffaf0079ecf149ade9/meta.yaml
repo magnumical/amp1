@@ -1,0 +1,15 @@
+artifact_uri: file:///kaggle/working/mlruns/0/9fac293087aa43ffaf0079ecf149ade9/artifacts
+end_time: 1734992544867
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9fac293087aa43ffaf0079ecf149ade9
+run_name: indecisive-snipe-338
+run_uuid: 9fac293087aa43ffaf0079ecf149ade9
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734992304661
+status: 3
+tags: []
+user_id: rezaa
